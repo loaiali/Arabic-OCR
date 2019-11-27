@@ -2,16 +2,25 @@ import numpy as np
 import argparse
 import cv2
 
-
-def textSkewCorrection():
-    image=cv2.imread("capr496.png")
-    gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+def binarize(img):
+    gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     gray=cv2.bitwise_not(gray)
     thresh = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    return thresh
+
+def segmentLine(img):
+    pass
+
+
+def textSkewCorrection(binarizedImage,image):
+    #image=cv2.imread("capr21.png")
+    #gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    #gray=cv2.bitwise_not(gray)
+    #thresh = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     
 
     #get all white pixels
-    coords = np.column_stack(np.where(thresh > 0))
+    coords = np.column_stack(np.where(binarizedImage > 0))
     
     #get the angle of minAreaRect
     angle = cv2.minAreaRect(coords)[-1]
@@ -28,12 +37,23 @@ def textSkewCorrection():
     rotated = cv2.warpAffine(image, M, (w, h),flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)    
     # show the output image
     print("[INFO] angle: {:.3f}".format(angle))
-    cv2.imwrite("rotated.png",rotated)
-    cv2.imshow("Input", image)
-    cv2.imshow("Rotated", rotated)
-    cv2.waitKey(0)     
+    #cv2.imwrite("rotated.png",rotated)
+    #cv2.imshow("Input", image)
+    #cv2.imshow("Rotated", rotated)
+    #cv2.waitKey(0)     
+    return rotated
+
+'''
+Input:directory where the image is located 
+Output:preprocessed image
+'''
+def preprocessImage(directory):
+    image=cv2.imread(directory)
+    binarizedImage=binarize(image)
+    skewCorrectedImage=textSkewCorrection(binarizedImage,image)
+    #TODO return line and word segmented image
+    return skewCorrectedImage
 
 
-
-if __name__=="__main__":
-    textSkewCorrection()
+#if __name__=="__main__":
+    #textSkewCorrection()
