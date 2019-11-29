@@ -34,9 +34,9 @@ def textSkewCorrection(binarizedImage,image):
     center = (w // 2, h // 2)
     #rotation matrix
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h),flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)    
+    rotated = cv2.warpAffine(binarizedImage, M, (w, h),flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)    
     # show the output image
-    print("[INFO] angle: {:.3f}".format(angle))
+    #print("[INFO] angle: {:.3f}".format(angle))
     #cv2.imwrite("rotated.png",rotated)
     #cv2.imshow("Input", image)
     #cv2.imshow("Rotated", rotated)
@@ -52,6 +52,7 @@ def preprocessImage(directory):
     binarizedImage=binarize(image)
     skewCorrectedImage=textSkewCorrection(binarizedImage,image)
     #TODO return line and word segmented image
+    #print(f" Image len: {np.shape(image)} binarizedImage len: {np.shape(binarizedImage)}, skewCorrectedImage len: {np.shape(skewCorrectedImage)}")
     return skewCorrectedImage
 
 
