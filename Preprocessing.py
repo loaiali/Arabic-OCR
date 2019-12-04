@@ -3,13 +3,16 @@ import argparse
 import cv2
 from matplotlib import pyplot as plt
 
-def thresoldOtsu(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+def binarize(img):
+    gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     gray=cv2.bitwise_not(gray)
-    thresh = cv2.threshold(
-        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
+    thresh = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     return thresh
+
+def segmentLine(img):
+    pass
+
+
 
 
 def textSkewCorrection(thresh):
