@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import os, random
-from Preprocessing import textSkewCorrection, thresoldOtsu
+from Preprocessing import textSkewCorrection, binarize
 from scipy import ndimage
 from skimage.morphology import skeletonize
 from scipy import stats
@@ -155,7 +155,7 @@ def main():
         file=random.choice(os.listdir("scanned\\"))
         img = cv2.imread("scanned\\"+file)
 
-        thre = thresoldOtsu(img)
+        thre = binarize(img)
         rotated = textSkewCorrection(thre)
         wordList=wordSegmentation(rotated)
 
