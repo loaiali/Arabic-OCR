@@ -3,7 +3,7 @@ import numpy as np
 from skimage.morphology import skeletonize
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from preprocessing import preprocessImage
+from Preprocessing import preprocessImage
 import os
 import glob 
 '''
@@ -49,7 +49,7 @@ def getNumberEndPoints(characterImage):
     out = np.zeros_like(skel)
     out[np.where(filtered==11)] = 1
     _,count=np.unique(out,return_counts=True)
-    print(f"count.shape: {count.shape}")
+    # print(f"count.shape: {count.shape}")
     if len(count)==1:
         return 0
     return count[1]  
@@ -130,7 +130,7 @@ def extractFeatures(characterImage):
     featureVector.extend(get16HorizontalZonesFeatures(characterImage))
     featureVector.extend(get16VerticalZonesFeatures(characterImage))
     featureVector.extend(getDctCoeff(characterImage))
-    featureVector.extend(getHogFeatures(characterImage))
+    featureVector.extend(getHogFeatures(characterImage).flatten())
     
     #normalize feature vector
     maxFeatureValue=max(featureVector)
@@ -141,22 +141,20 @@ def extractFeatures(characterImage):
 def writeFeatureVector(dir,features):
     os.makedirs(os.path.dirname(dir), exist_ok=True)
     outputFile=open(dir,'w')
-    print(f"Feature vector shape: {len(features)}")
+    # print(f"Feature vector shape: {len(features)}")
     for feature in features:
-
         outputFile.write(str(feature))
         outputFile.write("\n")
+    outputFile.close()
 if __name__=="__main__":
-    folders=glob.glob('dataset\\*')
+    folders = glob.glob('dataset\\*')
     for folder in folders:
         print(f"currently in dire: {folder}")
         for test_case in glob.glob(folder+'/*'):    
             print(f"folder: {test_case}")
             for f in glob.glob(test_case+'/*.png'):
-                outputFolder="dataset_features"+f[7:-4]+".txt"
+                outputFolder="dataset_features_test"+f[7:-4]+".txt"
                 characterImage=preprocessImage(f)
-                #cv2.imshow("character image",characterImage)
-                #cv2.waitKey(0)
                 featureVector=extractFeatures(characterImage)
                 writeFeatureVector(outputFolder,featureVector)
 
