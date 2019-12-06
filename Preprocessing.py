@@ -47,3 +47,7 @@ def textSkewCorrection(thresh):
 
 #image = cv2.imread("capr1.png")
 #textSkewCorrection(image)
+def preprocessImage(img):
+    binarizedImage=binarize(img)
+    textSkewCorrectedImg=textSkewCorrection(binarizedImage)
+    return textSkewCorrectedImg
