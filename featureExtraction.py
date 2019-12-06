@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from Preprocessing import preprocessImage
 import os
 import glob 
+from config import featuresDir
 '''
 There are 3 types of features
 1-Structural features:will be number of dots,number of end points,number of loops,
@@ -146,6 +147,12 @@ def writeFeatureVector(dir,features):
         outputFile.write(str(feature))
         outputFile.write("\n")
     outputFile.close()
+
+
+def imageToFeatureVector(imagePath):
+    characterImage=preprocessImage(imagePath)
+    return extractFeatures(characterImage)
+
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')
     for folder in folders:
@@ -153,7 +160,7 @@ if __name__=="__main__":
         for test_case in glob.glob(folder+'/*'):    
             print(f"folder: {test_case}")
             for f in glob.glob(test_case+'/*.png'):
-                outputFolder="dataset_features_test"+f[7:-4]+".txt"
+                outputFolder= featuresDir + f[7:-4]+".txt"
                 characterImage=preprocessImage(f)
                 featureVector=extractFeatures(characterImage)
                 writeFeatureVector(outputFolder,featureVector)
