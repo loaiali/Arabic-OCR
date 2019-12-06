@@ -7,10 +7,20 @@ from Preprocessing import textSkewCorrection, binarize
 from scipy import ndimage
 from skimage.morphology import skeletonize
 from scipy import stats
+import heapq
 
-
-SCALE_PERCENT = 400  # percent of original s
+SCALE_PERCENT = 400  
 CHAR_DI=100
+
+def showScaled(img, text, scale):
+    width = int(img.shape[1]
+                * scale / 100)
+    height = int(img.shape[0] * scale / 100)
+    dim = (width, height)
+    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+
+    cv2.imshow(text, resized)
+    cv2.waitKey(0)
 
 
 def segmentation(histogram,thresold):
@@ -59,11 +69,6 @@ def getMaxTransitions(lineIm,baseLine):
             if lineIm[i,j]!=1 and flag==1:
                 flag=0
             
-            #binary = cv2.line(lineIm, (j, i),
-            #                     (j ,0), 255, 1)
-
-            #cv2.imshow("LIne", binary)
-            #cv2.waitKey(0)
                                   
         print(i, currentTransition)
 
@@ -84,29 +89,6 @@ def baseLineAndMaxLineDetection(lineIm):
     copp[lineIm==255]=0
     copp[lineIm == 0] = 1
 
-
-    #skeleton = skeletonize(copp)
-
-    #skeleton = skeleton.astype(np.uint8)
-
-    #skeleton[skeleton==1]=255
-
-    #cv2.imshow("skeleton", skeleton)
-    #cv2.waitKey(0)
-
-    #skeleton[skeleton == 255] = 1
-
-    #kernel = np.ones((3, 3), np.uint8)
-
-    #img_dilation = cv2.erode(copp, kernel, iterations=1) # ;
-
-    #img_dilation[img_dilation == 1] = 255
-
-    #cv2.imshow("original", lineIm)
-    #cv2.waitKey(0)
-
-    #cv2.imshow("dialated", img_dilation)
-    #cv2.waitKey(0)
 
 
     his = np.sum(copp, axis=1)
@@ -149,13 +131,6 @@ def getMidCut(mfv,hisLine,start,midIndex,end,sr):
     lessThan2 = lessThan[lessThan <= midIndex]
     lessThan3 = lessThan[lessThan >= midIndex]
 
-
-    #print("lessThan",lessThan)
-    #print("lessThan2", lessThan2)
-    #print("lessThan3", lessThan3)
-
-
-
     if len(lessThan2) > 1:
         return min(lessThan2, key=lambda x: abs(x-midIndex))
     if len(lessThan3) > 1 :
@@ -182,11 +157,11 @@ def cutPointIdentification(wordImage,MaxTransition):
             break
 
     hisLine = np.sum(wordImage2, axis=0)
-    print(hisLine)
+    #print(hisLine)
 
     mfv=stats.mode(hisLine)[0][0]
 
-    print("MFV =" , mfv)
+    #print("MFV =" , mfv)
 
     flag=0
     srList=[]
@@ -194,7 +169,7 @@ def cutPointIdentification(wordImage,MaxTransition):
     #print("indie")
     count=0 
     for i in reversed(range(1, startIndex)):
-        print("Pixel at max index i = ",i)
+        #print("Pixel at max index i = ",i)
         if wordImage2[MaxTransition,i ]==1 and flag==1:
             #print("start")
             sr['end'] = i
@@ -202,11 +177,12 @@ def cutPointIdentification(wordImage,MaxTransition):
             mid = getMidCut(mfv, hisLine, sr["start"], int((sr["start"]+sr["end"])/2), sr["end"], sr)
             count += 1
 
-            print("cut point choosed ", mid)
+            #print("cut point choosed ", mid)
             sr["mid"] = mid
-            if True:
-                print("special ", sr["start"], sr["end"])
-
+            if count ==6:
+                print("special",sr["start"],sr["end"])
+                #print("special ", sr["start"], sr["end"])
+                pass
                 #binary = cv2.line(wordImage, (sr["start"], 0),
                 #                  (sr["start"], wordImage.shape[1]-1),  255, 1)
 
@@ -229,7 +205,7 @@ def cutPointIdentification(wordImage,MaxTransition):
     return srList
 
 
-def noConnectedPath(wordImage,baseLine,start,end):
+def noConnectedBaseLine(wordImage,baseLine,start,end):
 
     imageSub=wordImage[baseLine,end+1:start]
     for i in range(0, len(imageSub)):
@@ -252,39 +228,173 @@ def seperationFiltrations(wordImage,srl, baseLine,maxTransition):
     mfv = stats.mode(hisLine)[0][0]
 
     validSeperations=[]
+    i=0
+    
+    while i < len(srl):
+        start = srl[i]["start"]
+        end = srl[i]["end"]
+        print("*******************************cut Number = ",i,"  start", "end = " ,start,end, "mfv = ", mfv)
 
-    for sr in srl:
-        start = sr["start"]
-        end = sr["end"]
+        serp=[]
+        seg=[]
+        segn=[]
+        segnn=[]
+        if  i ==0 or i ==len(srl)-1:
+            serp.append(srl[i]["start"])
+            serp.append(srl[i]["end"])
+        else:
+            serp.append(srl[i-1]["mid"])
+            serp.append(srl[i+1]["mid"])
+        
+        if i!=len(srl)-1:
+            seg.append(srl[i]["mid"])
+            seg.append(srl[i+1]["mid"])
 
-        if hisLine[sr["mid"]]==0:
-            validSeperations.append(sr)
-        elif noConnectedPath(wordImage2,baseLine,start,end):
-            validSeperations.append(sr)
-        elif hasHole(wordImage2,start,end):
-        elif 
-            pass
+        if i < len(srl)-2 :
+            segn.append(srl[i+1]["mid"])
+            segn.append(srl[i+2]["mid"])
+        if i < len(srl)-3:
+            segnn.append(srl[i+2]["mid"])
+            segnn.append(srl[i+3]["mid"])
+
+
+
+        if hisLine[srl[i]["mid"]]==0:
+            print("cond 1")
+            validSeperations.append(srl[i])
+            i+=1
+        elif hasHole(wordImage2,serp[0],serp[1]):                # unfortunately remove some correct cuts
+            print("cond 2")
+            i+=1
+            continue
+        elif  noConnectedBaseLine(wordImage2, baseLine, start, end):
+            print("cond 3")
+            if (underBaseLine(wordImage2, start, end, baseLine)):
+                i+=1
+                continue
+            elif hisLine[srl[i]["mid"]] < mfv :
+                validSeperations.append(srl[i])
+                i += 1
+            else :
+                i+=1
+                continue
+        elif srl[i] == srl[-1] and checkSegmentLength(wordImage2, start, end, baseLine):
+            i+=1
+            continue
+        elif  (len(seg)!=0 )and not isStroke(wordImage2,seg[0],seg[1],baseLine,mfv):
+            if  (i <len(srl)-1) and noConnectedBaseLine(wordImage2, baseLine, srl[i+1]["start"], srl[i+1]["end"]) and hisLine[srl[i+1]["mid"]] <= mfv:
+                i+=1
+                continue
+            else:
+                validSeperations.append(srl[i])
+                i += 1
+        elif (len(seg) != 0)and isStroke(wordImage2, seg[0], seg[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, seg[0], seg[1]):
+                validSeperations.append(srl[i])
+                i=i+1
+        elif (len(seg) != 0)and isStroke(wordImage2, seg[0], seg[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, seg[0], seg[1]):
+            if (len(segn) != 0)and isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, segn[0], segn[1]):
+                validSeperations.append(srl[i])
+                i=i+3
+                continue
+            if (len(segnn) != 0) and isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, segn[0], segn[1]) and isStroke(wordImage2, segnn[0], segnn[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, segnn[0], segnn[1]):
+                validSeperations.append(srl[i])
+                i = i+3
+                continue
+            if (len(segn) != 0)and ( not isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) or (isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, segn[0], segn[1]))):
+                i=i+1
+                continue
+        else :
+            print("cond else")
+            validSeperations.append(srl[i])
+            i += 1
 
 
 
     return validSeperations
 
 
+def dotBelowOrAbove(img, start, end,thres=12):
+    _, contours, _ = cv2.findContours(img[:, end:start].copy(),
+                                      cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    return len(contours) > 1
+
+
+def isStroke(wordImage2, start, end, baseLine,mfv,alfLength=13,error=5):
+    img = wordImage2[:,end:start].copy()
+
+    print("*******is Stroke function results****")
+    labelnum, _, _, _ = cv2.connectedComponentsWithStats(img)
+    if labelnum >2:
+        return False
+    print("is single connected conponens")
+
+    if  underBaseLine(wordImage2[:, end:start], start, end,baseLine):
+        return False
+    print("Not under base Line")
+
+
+    hisLine = np.sum(wordImage2[:, 0:start], axis=1)  # اhoriontal histogram
+
+
+    mfvHorizontal = stats.mode(hisLine)[0][0]
+
+    print(mfvHorizontal,mfv)
+
+    if (abs(int(mfvHorizontal)- int(mfv)) >=2 ):
+        return False
+    print("3ard el stroke =  base Line",  (abs(int(mfvHorizontal) - int(mfv))))
+    if hasHole(wordImage2, start, end):
+        return False
+
+    print("No hole")
+
+    biggest =biggestConnectedComponent(wordImage2[:, end:start])
+    h=calculateHeight(biggest)
+    print("h equal", h)
+    if (h>alfLength-error ):
+        return False
+    print("Stroke lenth is good")
+
+
+    
+    
+
+
+    return True
+
+
+def checkSegmentLength(wordImage2, start, end, baseLine,thres=9):
+    hisLine = np.sum(wordImage2[:,0:start], axis=1) # vertical histogram
+
+    indx = np.where(hisLine > 0)[0]
+
+    if len(indx) <=0 :
+        return False
+    mini = indx[0]
+    maxi = indx[-1]
+    
+    if abs((maxi-mini)) <=thres :
+        return True
+    
+    return False
+
+
+
 def underBaseLine(wordImage2 ,start, end,baseLine):
 
-    hisLine = np.sum(wordImage2[:,start:end], axis=1) #horizontal histogram
-
-    if noConnectedPath
+    hisLine = np.sum(wordImage2[:,end:start], axis=1) #horizontal histogram
 
     sumOveBbaseLine = np.sum(hisLine[0:baseLine])
     sumUnderBaseLine = np.sum(hisLine[baseLine+1:])
 
+    if sumUnderBaseLine > sumOveBbaseLine :
+        return True
+    
+    return False
 
 
 
-
-
-    pass
 
 def printCut(img,srl):
     for sr in srl:
@@ -294,7 +404,7 @@ def printCut(img,srl):
     
     
 
-def removeDotsAndHamza(img):
+def removeDotsAndHamza(img,thres=12):
     img_white = img.copy()
 
     #img_white[:, :] = 255-img_white[:, :]
@@ -302,34 +412,65 @@ def removeDotsAndHamza(img):
     #cv2.waitKey(0)
     labelnum, labelimg, contours, GoCs = cv2.connectedComponentsWithStats(
         img_white[:, :],)
-    maxSize = -1
-    maxLabel = -1
+    maxLabel = []
     for label in range(1, labelnum):
         x, y, w, h, size = contours[label]
-        #print(label)
-        if size > maxSize:
-            #img_white[y:y+h, x:x+w] = 0
-            maxSize = size
-            maxLabel = label
-            #print(maxSize)
+        #print(size)
+        if size > thres:
+            maxLabel.append(label)
+    for label in range(1, labelnum):
+        x, y, w, h, size = contours[label]
+        if label not in  maxLabel:
+            img_white[y:y+h, x:x+w] = 0
+
+
+    return img_white
+
+
+def biggestConnectedComponent(img ):
+    img_white = img.copy()
+
+    labelnum, labelimg, contours, GoCs = cv2.connectedComponentsWithStats(
+        img_white[:, :],)
+    maxLabel = -1
+    maxa=-1
+    for label in range(1, labelnum):
+        x, y, w, h, size = contours[label]
+        #print(size)
+        if size > maxa:
+            maxLabel=label
+            maxa=size
     for label in range(1, labelnum):
         x, y, w, h, size = contours[label]
         if label != maxLabel:
             img_white[y:y+h, x:x+w] = 0
-
-    #img_white[:, :] = 255-img_white[:, :]
-    #print(labelimg)
-
-    #cv2.imshow("word wihtout ", img_white)
-    #cv2.waitKey(0)
     return img_white
+
+def calculateHeight(img):
+    hisLine = np.sum(img, axis=1)
+    indx = np.sort(np.where(hisLine > 0)[0])
+    if len(indx) <= 0:
+        return -1
+    mini = indx[0]
+    maxi = indx[-1]
+    return abs((maxi-mini)) 
+    
+
+
+
+
 
 
 def hasHole(wordImage,start,end):
     #print("befre remove")
+
+    if start ==-1 and end ==-1 :
+        return False
     wordImage=removeDotsAndHamza(wordImage)
+    #print (wordImage[:,end:start])
+
     #print ("after remove")
-    _, contours, _ = cv2.findContours(wordImage[:, end:start].copy(),
+    _, contours, _ = cv2.findContours(wordImage[:, end+1:start].copy(),
                      cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     #print(contours)
@@ -340,30 +481,17 @@ def hasHole(wordImage,start,end):
 
 
 
-
-
-
 def wordSegmentation(binary):
-
 
     binary2 = binary.copy()
     binary2[binary == 255] = 0
     binary2[binary == 0] = 1
 
-    #print(np.sum(binary2, axis=1))
 
-    # histogrma   axis = 1 for line sementation
     sol = segmentation(np.sum(binary2, axis=1), 1)
     wordList=[]
     for line in sol:
         begin, end = line
-
-        
-        #print(begin, end)
-        #binary = cv2.line(binary, (0, begin),
-        #                (binary.shape[1]-1, begin), 0, 1)
-        #binary = cv2.line(binary, (0, end),
-        #                (binary.shape[1]-1, end), 0, 1)
 
         width = int(binary2[begin:end][:].shape[1] * SCALE_PERCENT / 100)
         height = int(binary2[begin:end][:].shape[0] * 100 / 100)
@@ -378,15 +506,11 @@ def wordSegmentation(binary):
         resized = cv2.resize(binary3, dim, interpolation=cv2.INTER_AREA)
         resizedcopy = resized.copy()
 
-        #cv2.imshow("vertical lines", resized)
-        #cv2.waitKey(0)
         resized[resizedcopy > 128] = 0
         resized[resizedcopy < 128] = 1
 
-
-
         ## words segminations
-        sol2 = segmentation(np.sum(resized, axis=0), 5)
+        sol2 = segmentation(np.sum(resized, axis=0), 8)
         lineList=[]
         for hor in sol2:
             begin2, end2 = hor
@@ -399,39 +523,26 @@ def wordSegmentation(binary):
             end2 = round(end2*(100.0/SCALE_PERCENT))
             subwords=[]
 
-
-
-            
             baseLine,maxLine = baseLineAndMaxLineDetection(binary[begin:end,begin2:end2])
             binary[begin:end, begin2:end2] = 255 - binary[begin:end, begin2:end2]
 
             srl=cutPointIdentification(binary[begin:end, begin2:end2], maxLine)
 
+            imgWithAllCuts=binary[begin:end, begin2:end2].copy()
+            printCut(imgWithAllCuts, srl)
+
             srl=seperationFiltrations(
                     binary[begin:end, begin2:end2], srl, baseLine, maxLine)
             
-            #printCut(binary[begin:end, begin2:end2], srl)
+            printCut(binary[begin:end, begin2:end2], srl)
 
-
-            width = int(binary[begin:end, begin2:end2].shape[1]
-                        * SCALE_PERCENT / 100)
-            height = int(
-                binary[begin:end, begin2:end2].shape[0] * SCALE_PERCENT / 100)
-            dim = (width, height)
-            resized = cv2.resize(
-                binary[begin:end, begin2:end2], dim, interpolation=cv2.INTER_AREA)
-
-            cv2.imshow("end", resized)
-            cv2.waitKey(0)
+            showScaled(imgWithAllCuts,
+                                   "image with All cuts", 400)
+            showScaled(binary[begin:end, begin2:end2],
+                       "image with correct filtrarions", 400)
 
 
 
-            
-            
-            #binary = cv2.line(binary, (begin2, begin),
-            #                      (begin2, end), 180,1)
-            #binary = cv2.line(binary, (end2, begin),
-            #                      (end2, end), 180, 1)
             word = {'rows': (begin, end), 'columns': (begin2, end2), 'subwords': subwords,}
             lineList.insert(0, word)
         wordList=wordList+lineList
@@ -443,12 +554,6 @@ def wordSegmentation(binary):
     #cv2.waitKey(0)
 
     return wordList
-
-
-
-
-
-
 
 
 def main():
@@ -479,7 +584,6 @@ def main():
                 
 
 main()
-
 
 
 
