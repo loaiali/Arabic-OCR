@@ -281,28 +281,37 @@ def seperationFiltrations(wordImage,srl, baseLine,maxTransition):
         elif srl[i] == srl[-1] and checkSegmentLength(wordImage2, start, end, baseLine):
             i+=1
             continue
-        elif  (len(seg)!=0 )and not isStroke(wordImage2,seg[0],seg[1],baseLine,mfv):
+        elif ((len(seg) != 0) and not isStroke(wordImage2, seg[0], seg[1], baseLine, mfv)) or ((len(seg)!=0) and (len(segn)!=0) and not hasHole(wordImage2, seg[0], seg[1]) and not hasHole(wordImage2, segn[0], segn[1])and  hasHole(wordImage2, seg[0], segn[1])):
+            print("SEG not stroke ")
             if  (i <len(srl)-1) and noConnectedBaseLine(wordImage2, baseLine, srl[i+1]["start"], srl[i+1]["end"]) and hisLine[srl[i+1]["mid"]] <= mfv:
+                print("SEG no stroke and noConnectedBaseLine")
                 i+=1
                 continue
             else:
+                print("SEG no stroke and ConnectedBaseLine ---> accepted i=i+1")
                 validSeperations.append(srl[i])
                 i += 1
         elif (len(seg) != 0)and isStroke(wordImage2, seg[0], seg[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, seg[0], seg[1]):
+                print("SEG Is stroke and Dots ----> accepted i=i+1")
                 validSeperations.append(srl[i])
                 i=i+1
         elif (len(seg) != 0)and isStroke(wordImage2, seg[0], seg[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, seg[0], seg[1]):
+            print("SEG Is stroke and No Dots")
             if (len(segn) != 0)and isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, segn[0], segn[1]):
+                print("SEGN Is stroke and No Dots  ---> accpeted i=i+3")
                 validSeperations.append(srl[i])
                 i=i+3
                 continue
             if (len(segnn) != 0) and isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, segn[0], segn[1]) and isStroke(wordImage2, segnn[0], segnn[1], baseLine, mfv) and not dotBelowOrAbove(wordImage2, segnn[0], segnn[1]):
+                print( "SEGNN Is stroke and Dots  and SEGNN is stroke and no dots ---> accpeted i=i+3")
                 validSeperations.append(srl[i])
                 i = i+3
                 continue
             if (len(segn) != 0)and ( not isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) or (isStroke(wordImage2, segn[0], segn[1], baseLine, mfv) and dotBelowOrAbove(wordImage2, segn[0], segn[1]))):
+                print("SEGN Is not  stroke  or segn is stroke with Dots ")
                 i=i+1
                 continue
+            i=i+1
         else :
             print("cond else")
             validSeperations.append(srl[i])
@@ -341,9 +350,14 @@ def isStroke(wordImage2, start, end, baseLine,mfv,alfLength=13,error=5):
 
     print(mfvHorizontal,mfv)
 
-    if (abs(int(mfvHorizontal)- int(mfv)) >=2 ):
+    if (abs(int(mfvHorizontal)- int(mfv)) >2 ):
         return False
     print("3ard el stroke =  base Line",  (abs(int(mfvHorizontal) - int(mfv))))
+
+    #if i>0 and i <len(srl)-1:
+    #    if hasHole(wordImage2, srl[i-1]["mid"], srl[i+1]["mid"]):
+    #        return False
+
     if hasHole(wordImage2, start, end):
         return False
 
@@ -352,8 +366,10 @@ def isStroke(wordImage2, start, end, baseLine,mfv,alfLength=13,error=5):
     biggest =biggestConnectedComponent(wordImage2[:, end:start])
     h=calculateHeight(biggest)
     print("h equal", h)
+
     if (h>alfLength-error ):
         return False
+
     print("Stroke lenth is good")
 
 
