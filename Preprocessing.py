@@ -45,9 +45,9 @@ def textSkewCorrection(thresh):
     return cv2.bitwise_not(rotated)
 
 
-#image = cv2.imread("capr1.png")
 #textSkewCorrection(image)
 def preprocessImage(img):
+    img = cv2.imread(img)
     binarizedImage=binarize(img)
     textSkewCorrectedImg=textSkewCorrection(binarizedImage)
     return textSkewCorrectedImg

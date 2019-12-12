@@ -1,0 +1,6 @@
+this folder contains the trained classifiers saved with joblib.dumb()
+
+N => the index of the classifier config
+k => the kernel config param 
+g => the gamma config param 
+C => the regularization config param 

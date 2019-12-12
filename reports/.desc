@@ -1,0 +1,6 @@
+this folder contains the information of every classifier with certain params
+
+N => the index of the classifier config
+k => the kernel config param 
+g => the gamma config param 
+C => the regularization config param 
