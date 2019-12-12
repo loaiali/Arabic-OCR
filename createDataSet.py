@@ -5,76 +5,20 @@ import os
 import random
 from Preprocessing import textSkewCorrection, binarize
 from scipy import ndimage
-from segmentation import wordSegmentation
+from segmentation2 import wordSegmentation, showScaled, showWordCuts, charSegmentation
 import pyarabic.araby as araby
 import pyarabic.number as number
 import nltk
+from progressbar import *
+import sys
 
-characterDict={}
-
-characterDict["أ"] = (4, 4, 4, 4)
-characterDict["آ"] = (4, 4, 4, 4)
-characterDict["ا"] = (4, 4, 4,4)
-characterDict["إ"] = (4, 4, 4,4)
-characterDict["ب"] = (6, 6, 14, 14)
-characterDict["ت"] = (6, 6, 14, 14)
-characterDict["ث"] = (6, 6, 14, 14)
-characterDict["ج"] = (12, 10, 11, 11)
-characterDict["ح"] = (12, 10, 11, 11)
-characterDict["خ"] = (12, 10, 11, 11)
-characterDict["د"] = (9, 9, 9, 9)
-characterDict["ذ"] = (9, 9, 9, 9)
-characterDict["ر"] = (6, 6, 6, 6)
-characterDict["ز"] = (6, 6, 6, 6)
-characterDict["س"] = (14, 13, 18, 18)
-characterDict["ش"] = (14, 13, 18, 18)
-characterDict["ص"] = (16, 16, 20, 20)
-characterDict["ض"] = (16, 16, 20, 20)
-characterDict["ط"] = (12, 12, 12, 12)
-characterDict["ظ"] = (12, 12, 12, 12)
-characterDict["ع"] = (10, 9, 10, 10)
-characterDict["غ"] = (10, 9, 10, 10)
-characterDict["ق"] = (9, 9, 15, 15)
-characterDict["ف"] = (9, 9, 15, 15)
-characterDict["ك"] = (10, 10, 14, 14)
-characterDict["ل"] = (6, 6, 11, 11)
-characterDict["م"] = (9, 10, 9, 9)
-characterDict["ن"] = (5, 6, 11, 11)
-characterDict["ه"] = (11, 10, 8, 11)
-characterDict["و"] = (8, 8, 8, 8)
-characterDict["ي"] = (7, 8, 12, 8)
-characterDict["ة"] = (11, 10, 8, 6)
-characterDict["ئ"] = (11, 7, 8, 6)
-characterDict["ؤ"] = (8, 8, 8, 8)
-characterDict["ى"] = (7, 8, 12, 8)
-characterDict["ء"] = (7, 7, 7, 7)
-characterDict["لا"] = (8, 8, 8,8)
-characterDict["لأ"] = (8, 8, 8,8)
-characterDict["لإ"] = (8, 8, 8, 8)
-characterDict["لآ"] = (8, 8, 8, 8)
-characterDict["؟"] = (7, 7, 7, 7)
-characterDict["."] = (4, 4, 4, 4)
-characterDict[","] = (4, 4, 4, 4)
-characterDict['،'] = (4, 4, 4, 4)
-characterDict['1'] = (9, 9, 9, 9)
-characterDict['2'] = (9, 9, 9, 9)
-characterDict['3'] = (9, 9, 9, 9)
-characterDict['4'] = (9, 9, 9, 9)
-characterDict['5'] = (9, 9, 9, 9)
-characterDict['6'] = (9, 9, 9, 9)
-characterDict['7'] = (9, 9, 9, 9)
-characterDict['8'] = (9, 9, 9, 9)
-characterDict['9'] = (9, 9, 9, 9)
-characterDict['0'] = (9, 9, 9, 9)
-
-characterDict['('] = (6, 6, 6, 6)
-characterDict[')'] = (6, 6, 6, 6)
+from PIL import ImageFont, ImageDraw, Image
+import textwrap
 
 
 
 
 englishName = {}
-
 
 englishName["أ"] = "alfHamzaFo2"
 englishName["آ"] = "alfMad"
@@ -142,40 +86,91 @@ nonConnChOneSide = ["و", "ر", "ز", "ذ", "د",
 nonConnChTwoSide = ["ء", "؟", ".", ",", '،',"(",")"]
 
 
+def searchTextOnly():
+    f=open("textOnly.txt","w")
+    for file in os.listdir("scanned//"):
+        file = file.replace(".png", "")
+        ftext = open("text\\"+file+".txt", "r", encoding="utf-8")
+        text = ftext.read()
+
+        special = ["؟", "0", "1", "2", "3", "4",
+                   "5", "6", "7", "8", "9", "..", "(", ")", ",", '،']
+
+        if not any(True for ch in special if ch in text):
+            print(file)
+            f.write(file+".txt\n")
+
+        
+    f.close()
+
+    pass
+
+
+def write_tokenz(list):
+    f = open("last token.txt", "w", encoding="utf-8")
+    for word in list:
+        f.write(word+"\n")
+
+    f.close()
 
 
 def check_on_length(wrong_file,right_file,ending=2000):
     fWrong = open(wrong_file,"w")
     fRight = open(right_file, "w")
+
+    cadidate = open("textOnly.txt")
+    cadidate=cadidate.readlines()
     total=0
     wrong = 0
-    for file in os.listdir("scanned//"):
-        file=file.replace(".png","")
+    widgets = ['Test: ', Percentage(), ' ', Bar(marker='0', left='[', right=']'),
+               ' ', ETA(), ' ', FileTransferSpeed()]  # see docs for other options
+
+    pbar = ProgressBar(widgets=widgets, maxval=ending)
+    pbar.start()
+    iii=0
+    for file in cadidate:
+        file=file.rstrip()
+        print(file)
+        pbar.update(iii)
+        iii += 1
+        file=file.replace(".txt","")
         img = cv2.imread("scanned\\"+file+".png")
         ftext = open("text\\"+file+".txt", "r", encoding="utf-8")
         ## image segmentation
+
+
+        text = ftext.read()
+        wordsArray = nltk.word_tokenize(text)
+
+        #print("text word List ", wordsArray)
+
         thre = binarize(img)
         rotated = textSkewCorrection(thre)
         wordList = wordSegmentation(rotated)
 
         ## text preprocessing
-        text = ftext.read().replace(":", "").replace(".", "")
 
         ## tokenizations
-        wordsArray = nltk.word_tokenize(text)
+        #wordsArray = nltk.word_tokenize(text)
+        print(file,len (wordsArray), len(wordList))
+
 
         
         total+=1
-        #print("image Number ",total)
-        #print(len(wordList), len (wordsArray))
+        
         if len(wordList) != len (wordsArray):
             wrong +=1
             stt="{0:<20}  {1:<20}  {2:<20}".format(
                 file, str(len(wordList)), str(len(wordsArray)))
             fWrong.write(stt+"\n")
-            #print("************wrong Image************")
+            print("************wrong Image************")
+            write_tokenz(wordsArray)
+            showWordCuts(img,wordList)
+            break
         else:
-            fRight.write(file+"\n")
+            fRight.write(file+".txt"+"\n")
+            print("************corrent Image************")
+
         
         ftext.close()
         if total == ending:
@@ -183,6 +178,7 @@ def check_on_length(wrong_file,right_file,ending=2000):
     
     fWrong.close()
     fRight.close()
+    pbar.finish()
 
 
 
@@ -215,88 +211,87 @@ def checkLamAlf(word,index):
 
 
 
-def createDataSet(img,wordList,wordsArray,characterDict,nonConnChOneSide,nonConnChTwoSide,englishName,file):
+def createDataSet(img,wordList,wordsArray,nonConnChOneSide,nonConnChTwoSide,englishName,file):
 
     c=0
-    #print("lengthes ",len(wordList),"  ",len(wordsArray))
     for Wordimage,word in zip(wordList, wordsArray):
         rows=Wordimage["rows"]
         columns = Wordimage["columns"]
-
+        srl=Wordimage["srl"]
         image = img[rows[0]:rows[1], columns[0]:columns[1]]
-        width=image.shape[1]
-
-        #print(word,"xxx")
-        #cv2.imshow("Word",image)
-        #cv2.waitKey(0)
+        wordLength=0
         i=0
+        characters=[]
+
         while i < len(word):
-            #print(word[i])
-            length=0
-            char=""
-            if (checkLamAlf(word,i)):
-                length = characterDict[word[i:i+2]][0]
-                char = word[i:i+2]
-                i=i+1
+            if (checkLamAlf(word, i)):
+                characters.append(word[i:i+2])
+                i=i+2
             else:
-                length=getCharacterLength(characterDict,nonConnChOneSide,nonConnChTwoSide,word,i)-1
-                char=word[i]
-            index= max(width-length, 0)
-            charImage=image[:,index:width]
+                characters.append(word[i])
+                i=i+1 
+            wordLength += 1
+        
+        if wordLength == len(srl)+1:
+            i=0
+            c=0
+            print(characters,len(srl)+1)
+            for indx,char in enumerate(characters):
+                charImage=None
+                if indx==0:
+                    charImage = image[:, srl[indx]["mid"]:]
+                elif indx <len(characters)-1:
+                    charImage = image[:, srl[indx]["mid"]:srl[indx-1]["mid"]]
+                else:
+                    charImage = image[:, 0:srl[indx-1]["mid"]]
+                
+                #showScaled(charImage,"ch",400)
+      
+                        
+                print('dataset\\'+ englishName[char]+"\\"+file)
+                if not os.path.exists('dataset\\'+englishName[char]+"\\"+file):
+                    os.makedirs('dataset\\'+englishName[char]+"\\"+file)
 
-            if (charImage.shape[1] == 0):
-                #print("something wrong in alingment")
-                return
-            #cv2.imshow("char", charImage)
-            #cv2.waitKey(0)
-            print('dataset\\'+ englishName[char]+"\\"+file)
-            if not os.path.exists('dataset\\'+englishName[char]+"\\"+file):
-                os.makedirs('dataset\\'+englishName[char]+"\\"+file)
-
-            fileName = 'dataset\\' +englishName[char]+"\\"+file+"\\" + str(c)+".png"
-            #print(fileName)
-            cv2.imwrite(fileName, charImage)
-            image = image[:, 0:max(width-length, 0)]
-            width = image.shape[1]
-            c+=1
-            i=i+1
-
-check_on_length("wrong.txt","right.txt")
+                fileName = 'dataset\\' +englishName[char]+"\\"+file+"\\" + str(c)+".png"
+                #print(fileName)
+                cv2.imwrite(fileName, charImage)
+                c+=1
 
 
-#f = open("right.txt", "r")
-#fw = open("output.txt", "w", encoding="utf-8")
-#files = f.read().split()
+#searchTextOnly()
+check_on_length("wrong.txt","right.txt",ending=5000)
+f = open("right.txt", "r")
+fw = open("output.txt", "w", encoding="utf-8")
+files = f.read().split()
 
-#for file in files:
+for file in files:
 
-#        img = cv2.imread("scanned\\"+file+".png")
-#        ftext = open("text\\"+file+".txt", "r", encoding="utf-8")
-#        ## image segmentation
+       img = cv2.imread("scanned\\"+file.replace(".txt","")+".png")
+       ftext = open("text\\"+file, "r", encoding="utf-8")
+       ## image segmentation
 
-        ## text preprocessing
- #       text = ftext.read().replace(":", "").replace(".", "").replace("-","")
+        # text preprocessing
+       text = ftext.read().replace(":", "").replace(".", "").replace("-","")
 
-        ## tokenizations
-#        wordsArray = nltk.word_tokenize(text)
-#        for word in wordsArray:
-#            fw.writelines([word, "  ", str(word.encode("utf8-")), "\n"])
+        # tokenizations
+       wordsArray = nltk.word_tokenize(text)
+       for word in wordsArray:
+           fw.writelines([word, "  ", str(word.encode("utf8-")), "\n"])
 
-#        thre = thresoldOtsu(img)
-#        rotated = textSkewCorrection(thre)
+       thre = binarize(img)
+       rotated = textSkewCorrection(thre)
 
-        #cv2.imwrite("corr_capr1003.png", rotated)
-#        wordList = wordSegmentation(rotated)
+       #cv2.imwrite("corr_capr1003.png", rotated)
+       wordList = charSegmentation(rotated)
 
-#        createDataSet(rotated,wordList, wordsArray, characterDict,
-#                      nonConnChOneSide, nonConnChTwoSide, englishName, file)
+       createDataSet(rotated,wordList, wordsArray,
+                     nonConnChOneSide, nonConnChTwoSide, englishName, file)
         
 
-#f.close()
-#fw.close()
+f.close()
+fw.close()
 
 
-#check_on_length()
 
 
             
