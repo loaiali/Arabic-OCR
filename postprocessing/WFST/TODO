@@ -1,0 +1,3 @@
+1. Model Space to indicate the beging in word -> that requires modifying lexicon state machine
+2. used optimize versions of L.fst , G.fst, LG.fst and language model using pruning
+3. imporve sentence truncation to make better data set optimizing the language model

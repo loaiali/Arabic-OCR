@@ -1,0 +1,15 @@
+text
+.vscode
+.history
+
+*.txt
+*.3bo
+*.gz
+*.vocab
+*.pdf
+*.syms
+*.fst
+*.bo
+*.jpg
+*.1grams
+__pycache__
