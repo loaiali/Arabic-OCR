@@ -40,11 +40,13 @@ def cutSentToWords(text, wordsLen):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--infile', type=argparse.FileType(mode='r', encoding='utf-8'),
-                        help='input file.', required=True)
+                        help='arabc normalizd dataset.', required=True)
     args = parser.parse_args()
-    filetext = args.infile.read()
-    # normalized = normalize_arabic(filetext)
 
-    with open("arabic_letters.norm.txt", "w") as f:
-        f.writelines('\n'.join(set([' '.join(re.findall(arabic_letter, word))
-                                    for word in filetext.split()])))
+    lines = []
+    with open(args.infile.name, 'r') as src:
+        for word in src:
+            lines.append(' '.join(re.findall(arabic_letter, word))+'\n')
+
+    with open("arabic_letters.norm.txt", "w") as dst:
+        dst.writelines(lines)

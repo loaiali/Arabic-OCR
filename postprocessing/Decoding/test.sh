@@ -1,3 +1,5 @@
+shuf -n 10 ../WFST/arabic.norm.txt  > test.txt 
+
 beam_width=$1
 lmweight=$2
 echo "Testing with  and beam width $beam_width lmwight $lmweight"

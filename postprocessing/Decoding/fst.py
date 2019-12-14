@@ -170,7 +170,7 @@ class FST:
 
         # Here is the core of the search algorithm. It loops over time, using the acoustic model scores
         for t, obs_vector in enumerate(model_scores):
-            # print(t)
+            print(t)
             arcs = [self._arcs[token.arc_number]
                     for token in decoder.active_tokens]
 

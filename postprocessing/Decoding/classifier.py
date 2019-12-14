@@ -8,12 +8,12 @@ from random import randrange, random
 additional_letters = "لا|لأ|لآ|لإ"
 arabic_letter = re.compile(f'{additional_letters}|[\u0621-\u064A]')
 
-arabic_letters_probs = [0.15704748, 0.08990748, 0.00692419, 0.05519331, 0.08611871,
-                        0.02410659, 0.04612263, 0.0519825, 0.03162658, 0.04284779,
-                        0.02999402, 0.06160681, 0.07197932, 0.02626929, 0.05970513,
-                        0.02277152, 0.00985534, 0.00466017, 0.01151384, 0.00237183,
-                        0.02821879, 0.01281729, 0.01854503, 0.01683303, 0.0093017,
-                        0.0109148, 0.00383984, 0.006925]
+arabic_letters_probs = [0.16464289, 0.05567354, 0.04702837, 0.00968891, 0.01483219,
+                        0.07832473, 0.03759651, 0.03138544, 0.11820532, 0.07037656,
+                        0.06028702, 0.03778822, 0.0081729, 0.03170526, 0.04741351,
+                        0.02525668, 0.02020331, 0.02812318, 0.01908568, 0.01025082,
+                        0.00697089, 0.00247327, 0.02374559, 0.01513691, 0.00620304,
+                        0.00371042, 0.00985217, 0.00923583, 0.00663082]
 
 
 def getRandomEvals(inputFile="input_labels", text=""):
@@ -30,19 +30,15 @@ def getRandomEvals(inputFile="input_labels", text=""):
     for letter in re.findall(arabic_letter, text):
         if(random() > removalErrRate):
             continue
-
         features_vectors.append([randrange(1, 10)
                                  for letter in arabic_letters])
         curr_letter_indx = arabic_letters.index(letter)
-        features_vectors[-1][curr_letter_indx] = 20. if random(
+        features_vectors[-1][curr_letter_indx] = 30. if random(
         ) < subErrRate else 1.
         from scipy.special import softmax
         features_vectors[-1] = softmax(features_vectors[-1])
         features_vectors[-1] = np.log(features_vectors[-1]) - \
             np.log(arabic_letters_probs)
-        pritn(features_vectors[-1])
-        # print(features_vectors[-1])
-
     return features_vectors
 
 

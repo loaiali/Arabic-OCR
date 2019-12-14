@@ -11,8 +11,11 @@ echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $w
 
 #for file in `ls ./text | sort -R | head -$corpusSize`;
 #s/ و/ و /g;
-sed 's/[ؤإأآةءئى]//g; s/لا/ﻻ/g;s/ و/ و /g;s/:\|؟\|\; /\. /g; s/\.+/\n/g;' ./text/$corpusFile  > arabic.norm.txt
-python3 normalize.py -i ./text/$corpusFile
+sed 's/[ؤإأآةءئى]//g;s/لا/ﻻ/g;s/ و/ و /g;s/\:\|؟\|\;/\. /g; s/\.\+/\. /g; s/[^ء-يﻻ .]//g' ./text/$corpusFile  > arabic.norm.txt
+sed -i 's/\./ /g' arabic.norm.txt
+sed -i 's/ \+/ /g;/^[[:space:]]*$/d' arabic.norm.txt
+sed 's/ /\n/g' arabic.norm.txt > arabic_letters.norm.txt
+python3 normalize.py -i arabic.norm.txt
 
 ngram-count -text arabic.norm.txt -order 1 -write arabic.1grams
 sort -k 2,2 -n -r arabic.1grams | head -$vocabSize > arabic.top$vocabSize.1grams
@@ -42,16 +45,16 @@ rm arabic-pruned.${wordsOrder}bo
 
 #----------------------
 echo 'preparing laguage mode for letters'
-ngram-count -text arabic_letters.norm.txt -order ${wordsOrder} -write arabic_letters.${wordsOrder}grams.gz
-ngram-count -order ${wordsOrder} -vocab arabic_letters -read arabic_letters.${wordsOrder}grams.gz -wbdiscount -lm arabic_letters.${wordsOrder}bo.gz
+ngram-count -text arabic_letters.norm.txt -order ${lettersOrder} -write arabic_letters.${lettersOrder}grams.gz
+ngram-count -order ${lettersOrder} -vocab arabic_letters -read arabic_letters.${lettersOrder}grams.gz -wbdiscount -lm arabic_letters.${lettersOrder}bo.gz
 
 echo 'prune language model for words'
-ngram  -lm arabic_letters.${wordsOrder}bo.gz -prune 1e-5 -write-lm arabic_letters-pruned.${wordsOrder}bo.gz
-rm arabic_letters.${wordsOrder}bo.gz
+ngram  -lm arabic_letters.${lettersOrder}bo.gz -prune 1e-5 -write-lm arabic_letters-pruned.${lettersOrder}bo.gz
+rm arabic_letters.${lettersOrder}bo.gz
  
-gunzip arabic_letters-pruned.${wordsOrder}bo.gz
-cat arabic_letters-pruned.${wordsOrder}bo | sed 's/<s>/ـسـ/g' | sed 's/<\/s>/ـأـ/g' > ./Hfst/arabic_letters.bo
-rm arabic_letters-pruned.${wordsOrder}bo
+gunzip arabic_letters-pruned.${lettersOrder}bo.gz
+cat arabic_letters-pruned.${lettersOrder}bo | sed 's/<s>/ـسـ/g' | sed 's/<\/s>/ـأـ/g' > ./Hfst/arabic_letters.bo
+rm arabic_letters-pruned.${lettersOrder}bo
 
 echo 'produce lexicon model fst'
 cd Lfst && ./tofst.sh && cd ..
