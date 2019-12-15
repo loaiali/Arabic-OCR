@@ -12,7 +12,7 @@ backOffSym = 'ـجـ'
 
 
 arabic_word = re.compile('[\u0621-\u064A]+')
-additional_letters = "ﻻ|لأ|لآ|لإ"
+additional_letters = "لا|لأ|لآ|لإ"
 arabic_letter = re.compile(f'{additional_letters}|[\u0621-\u064A]')
 # disampg_char = re.compile(f'{disampg}/d+')
 

@@ -2,20 +2,23 @@ corpusFile=$1
 vocabSize=$2
 wordsOrder=$3
 lettersOrder=$4
+prunThreshold=$5
 rm *.vocab
 rm *.gz
 rm *.bo
 export LANG=ar_SY.UTF-8 LC_COLLATE=C.UTF-8 LANGUAGE=syr:ar:en;  unset LC_ALL;
 
-echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $wordsOrder , ngram letters order is $lettersOrder 
+echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $wordsOrder , ngram letters order is $lettersOrder  and pruning threshold $prunThreshold
 
 #for file in `ls ./text | sort -R | head -$corpusSize`;
-#s/ و/ و /g;
-sed 's/[ؤإأآةءئى]//g;s/لا/ﻻ/g;s/ و/ و /g;s/\:\|؟\|\;/\. /g; s/\.\+/\. /g; s/[^ء-يﻻ .]//g' ./text/$corpusFile  > arabic.norm.txt
-sed -i 's/\./ /g' arabic.norm.txt
-sed -i 's/ \+/ /g;/^[[:space:]]*$/d' arabic.norm.txt
+#;s/لا/لا/g
+sed 's/[ؤإأآةءئى]//g;s/ و/ و /g;s/\:\|؟\|\;/\. /g; s/\.\+/\. /g; s/[^ء-يلا .]//g' ./text/$corpusFile  > arabic.norm.txt
+sed -i 's/\./\n/g' arabic.norm.txt
+sed -i 's/ \+/ /g;' arabic.norm.txt
+sed -i '/^\s*$/d;' arabic.norm.txt
 sed 's/ /\n/g' arabic.norm.txt > arabic_letters.norm.txt
-python3 normalize.py -i arabic.norm.txt
+sed -i '/^\s*$/d;' arabic_letters.norm.txt
+python3 normalize.py -i arabic_letters.norm.txt
 
 ngram-count -text arabic.norm.txt -order 1 -write arabic.1grams
 sort -k 2,2 -n -r arabic.1grams | head -$vocabSize > arabic.top$vocabSize.1grams
@@ -35,7 +38,7 @@ ngram-count -text arabic.norm.txt -order ${wordsOrder} -write arabic.${wordsOrde
 ngram-count -order ${wordsOrder} -vocab arabic.top$vocabSize.vocab -read arabic.${wordsOrder}grams.gz -wbdiscount -lm arabic.${wordsOrder}bo.gz
 
 echo 'prune language model for words'
-ngram  -lm arabic.${wordsOrder}bo.gz -prune 1e-5 -write-lm arabic-pruned.${wordsOrder}bo.gz
+ngram  -lm arabic.${wordsOrder}bo.gz -prune $prunThreshold -write-lm arabic-pruned.${wordsOrder}bo.gz
 rm arabic.${wordsOrder}bo.gz
  
 gunzip arabic-pruned.${wordsOrder}bo.gz
@@ -48,8 +51,8 @@ echo 'preparing laguage mode for letters'
 ngram-count -text arabic_letters.norm.txt -order ${lettersOrder} -write arabic_letters.${lettersOrder}grams.gz
 ngram-count -order ${lettersOrder} -vocab arabic_letters -read arabic_letters.${lettersOrder}grams.gz -wbdiscount -lm arabic_letters.${lettersOrder}bo.gz
 
-echo 'prune language model for words'
-ngram  -lm arabic_letters.${lettersOrder}bo.gz -prune 1e-5 -write-lm arabic_letters-pruned.${lettersOrder}bo.gz
+echo 'prune language model for letters'
+ngram  -lm arabic_letters.${lettersOrder}bo.gz -prune $prunThreshold -write-lm arabic_letters-pruned.${lettersOrder}bo.gz
 rm arabic_letters.${lettersOrder}bo.gz
  
 gunzip arabic_letters-pruned.${lettersOrder}bo.gz

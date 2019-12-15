@@ -7,8 +7,8 @@ from math import ceil
 import numpy as np
 
 arab_word = re.compile('[\u0621-\u064A]+')
-additional_letters = "ﻻ|لأ|لآ|لإ"
-arabic_letter = re.compile(f'ﻻ|[\u0621-\u064A]')
+additional_letters = "لا|لأ|لآ|لإ"
+arabic_letter = re.compile(f'لا|[\u0621-\u064A]')
 
 
 def cutSentToWords(text, wordsLen):
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     lines = []
     with open(args.infile.name, 'r') as src:
         for word in src:
-            lines.append(' '.join(re.findall(arabic_letter, word))+'\n')
+            lines.append(' '.join(re.findall(arabic_letter, word)))
 
     with open("arabic_letters.norm.txt", "w") as dst:
-        dst.writelines(lines)
+        dst.writelines('\n'.join(lines))

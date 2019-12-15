@@ -17,8 +17,8 @@ arabic_letters_probs = [0.16464289, 0.05567354, 0.04702837, 0.00968891, 0.014832
 
 
 def getRandomEvals(inputFile="input_labels", text=""):
-    removalErrRate = 1.
-    subErrRate = .7
+    removalErrRate = 0.
+    subErrRate = 0.
     arabic_letters = []
     with open(inputFile) as f:
         for line in f:
@@ -28,13 +28,13 @@ def getRandomEvals(inputFile="input_labels", text=""):
     features_vectors = []
 
     for letter in re.findall(arabic_letter, text):
-        if(random() > removalErrRate):
+        if(random() < removalErrRate):
             continue
         features_vectors.append([randrange(1, 10)
                                  for letter in arabic_letters])
         curr_letter_indx = arabic_letters.index(letter)
-        features_vectors[-1][curr_letter_indx] = 30. if random(
-        ) < subErrRate else 1.
+        features_vectors[-1][curr_letter_indx] = randrange(20, 30) if random(
+        ) > subErrRate else 1.
         from scipy.special import softmax
         features_vectors[-1] = softmax(features_vectors[-1])
         features_vectors[-1] = np.log(features_vectors[-1]) - \
