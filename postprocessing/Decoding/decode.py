@@ -43,7 +43,8 @@ def main():
 
     predictedSentences = []
     try:
-        for sentence in args.testfile.read().splitlines():
+        for i, sentence in enumerate(args.testfile.read().splitlines()):
+            print(f"passed: {i} sentences")
             time_start = time.time()
             classifier.load_parameters(sentence)
             # classifier.stack_features()
@@ -58,15 +59,16 @@ def main():
             words = [outlabel for _, outlabel, _ in hypothesis if outlabel not in [
                 epsSym, startSym, endSym]]
 
-            # print(words)
             predictedSentences.append(' '.join(words))
             print(
                 f"{len(sentence)} letters takes {time.time()-time_start} seconds")
     except KeyboardInterrupt:
         print("[CTRL+C detected]")
+        text = '\n'.join(predictedSentences)
+        args.outfile.write(text)  # remove firlst endline
 
     text = '\n'.join(predictedSentences)
-    args.outfile.write(text[1:])  # remove firlst endline
+    args.outfile.write(text)  # remove firlst endline
 
 
 if __name__ == '__main__':

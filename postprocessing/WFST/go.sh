@@ -14,8 +14,8 @@ echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $w
 #;s/لا/لا/g
 sed 's/[ؤإأآةءئى]//g;s/ و/ و /g;s/\:\|؟\|\;/\. /g; s/\.\+/\. /g; s/[^ء-يلا .]//g' ./text/$corpusFile  > arabic.norm.txt
 sed -i 's/\./\n/g' arabic.norm.txt
-sed -i 's/ \+/ /g;' arabic.norm.txt
-sed -i '/^\s*$/d;' arabic.norm.txt
+sed -i 's/ \+/ /g;/^\s*$/d' arabic.norm.txt
+# sed -i '/^\s*$/d;' arabic.norm.txt
 sed 's/ /\n/g' arabic.norm.txt > arabic_letters.norm.txt
 sed -i '/^\s*$/d;' arabic_letters.norm.txt
 python3 normalize.py -i arabic_letters.norm.txt
