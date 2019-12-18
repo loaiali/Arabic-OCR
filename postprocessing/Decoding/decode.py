@@ -42,6 +42,7 @@ def main():
     fst = FST(args.decoding_graph, args.input_labels)
 
     predictedSentences = []
+    all_time_start = time.time()
     try:
         for i, sentence in enumerate(args.testfile.read().splitlines()):
             print(f"passed: {i} sentences")
@@ -69,6 +70,7 @@ def main():
 
     text = '\n'.join(predictedSentences)
     args.outfile.write(text)  # remove firlst endline
+    print(f"total time  takes {time.time()-all_time_start} seconds")
 
 
 if __name__ == '__main__':
