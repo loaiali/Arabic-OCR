@@ -62,7 +62,7 @@ def main():
 
             predictedSentences.append(' '.join(words))
             print(
-                f"{len(sentence)} letters takes {time.time()-time_start} seconds")
+                f"{len(sentence)} letters takes {int(time.time()-time_start)} seconds")
     except KeyboardInterrupt:
         print("[CTRL+C detected]")
         text = '\n'.join(predictedSentences)
@@ -70,7 +70,7 @@ def main():
 
     text = '\n'.join(predictedSentences)
     args.outfile.write(text)  # remove firlst endline
-    print(f"total time  takes {time.time()-all_time_start} seconds")
+    print(f"total time  takes {int(time.time()-all_time_start)} seconds")
 
 
 if __name__ == '__main__':
