@@ -11,7 +11,6 @@ export LANG=ar_SY.UTF-8 LC_COLLATE=C.UTF-8 LANGUAGE=syr:ar:en;  unset LC_ALL;
 echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $wordsOrder , ngram letters order is $lettersOrder  and pruning threshold $prunThreshold
 
 #for file in `ls ./text | sort -R | head -$corpusSize`;
-#;s/لا/لا/g
 # echo normalize dataset $corpusFile
 # ./normalize.sh $corpusFile
 
@@ -47,7 +46,7 @@ ngram-count -text arabic_letters.norm.txt -order ${lettersOrder} -write arabic_l
 ngram-count -order ${lettersOrder} -vocab arabic_letters -read arabic_letters.${lettersOrder}grams.gz -wbdiscount -lm arabic_letters.${lettersOrder}bo.gz
 
 echo 'prune language model for letters'
-ngram  -lm arabic_letters.${lettersOrder}bo.gz -prune $prunThreshold -write-lm arabic_letters-pruned.${lettersOrder}bo.gz
+ngram  -lm arabic_letters.${lettersOrder}bo.gz -prune 1e-8 -write-lm arabic_letters-pruned.${lettersOrder}bo.gz
 rm arabic_letters.${lettersOrder}bo.gz
  
 gunzip arabic_letters-pruned.${lettersOrder}bo.gz

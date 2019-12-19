@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import re
 
 
 def sed(ref=None, hyp=None):
@@ -50,9 +51,10 @@ def sed(ref=None, hyp=None):
 def score(reference: [str] = None, hypothesis: [str] = None):
     assert(len(hypothesis) == len(reference))
     wer = ser = total_tokens_n = 0
+    letters = re.compile('[ء-ي ]')
     for reference_string, hypothesis_string in zip(reference, hypothesis):
-        reference_string_words = reference_string.split()
-        hypothesis_string_words = hypothesis_string.split()
+        reference_string_words = re.findall(letters, reference_string)
+        hypothesis_string_words = re.findall(letters, hypothesis_string)
         tokens_n, errs_n, del_n, insert_n, sub_n = sed(
             ref=reference_string_words, hyp=hypothesis_string_words)
         wer += errs_n
@@ -60,7 +62,7 @@ def score(reference: [str] = None, hypothesis: [str] = None):
         total_tokens_n += tokens_n
         # print(f'ref -> {reference_string}hyp-> {hypothesis_string}\nwords_n: {tokens_n}, sub_errs: {sub_n}, del_errs: {del_n}, insert_errs: {insert_n}, total_erros: {errs_n} \n')
 
-    print(f'wer count: {wer}, ser count: {ser}')
+    print(f'wer count: {total_tokens_n}, ser count: {len(hypothesis)}')
     wer /= total_tokens_n
     ser /= len(hypothesis)
     print(f'wer% : {round(wer*100,2)}, ser% : {round(ser*100,2)}')
