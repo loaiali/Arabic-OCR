@@ -7,7 +7,7 @@ import numpy as np
 # sys.path.append("postprocessing/Decoding")
 from postprocessing.Decoding.fst import FST
 from postprocessing.Decoding.beam_search import BeamSearch
-from config import englishName
+from config import englishName, arabicNames
 '''
 search graph params interface
 [
@@ -37,10 +37,10 @@ class OCR:
             ]
         '''
         allImageWords = []
-        # wordsSegmented, img = segmentationFromPath(imagePath)
+        wordsSegmented, img = segmentationFromPath(imagePath)
         # joblib.dump(wordsSegmented, "wordsSegmented.test")
         # joblib.dump(img, "img.test")
-        wordsSegmented, img = joblib.load("wordsSegmented.test"), joblib.load("img.test")
+        # wordsSegmented, img = joblib.load("wordsSegmented.test"), joblib.load("img.test")
 
         words15 = []
         wordsCount = 0
@@ -59,6 +59,11 @@ class OCR:
                 currentCharImage = currentWordImage[:,midii:midi]
                 # showScaled(currentCharImage, "currentCharImage", 100)
                 lettersToScores = predictFromImage(currentCharImage, True)
+
+                # letterclassifer = arabicNames[sorted(lettersToScores.items(), key=lambda x: x[1])[-1][0]]
+                # allImageWords.append(letterclassifer) # TODO : remove this shit
+                # print(letterclassifer)
+                
                 indexToLetters = None
                 with open("input_labels.txt","r", encoding="utf8") as f:
                     indexToLetters = {i: englishName[letter] for (i,letter) in enumerate(f.read().split())}
@@ -68,25 +73,29 @@ class OCR:
                 # print(scoresSorted)
                 words15.append(np.array(scoresSorted))
             wordsCount += 1
-            if (wordsCount >= 20):
+            if (wordsCount >= 1):
+                # TODO : uncomment this shit
                 predictedWords = self._search(np.array(words15))
-                print(predictedWords)
+                # print(predictedWords)
                 # yield predictedWords
                 allImageWords.append(predictedWords)
                 wordsCount = 0
                 words15.clear()
             # showScaled(currentCharImage, 'currentChar', 150)
+        txt = ' '.join([''.join(w) for w in allImageWords])
+        with open("hypo_error.txt", 'w', encoding='utf-8') as f:
+            f.write(txt)
         return ' '.join(allImageWords)
 
 
     def _search(self, predMatrix):
-        print("searching:")
+        # print("searching:")
         words = self.fst.decode(BeamSearch(self.beamWidth), predMatrix, self.lmWeight)
         return words
 
 
 def main():
-    prog = OCR("LG4.txt", "input_labels.txt", 25, 250)
+    prog = OCR("H1.txt", "input_labels.txt", 10, 250)
     imagePath = "scanned/capr1.png"
     words = prog.getWordsFromImage(imagePath)
     print(words)
