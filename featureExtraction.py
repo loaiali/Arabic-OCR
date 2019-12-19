@@ -3,7 +3,7 @@ import numpy as np
 from skimage.morphology import skeletonize
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from Preprocessing import preprocessImage
+from Preprocessing import preprocessImageFromPath as preprocessImage
 import os
 import glob 
 from config import featuresDir
@@ -153,6 +153,11 @@ def imageToFeatureVector(imagePath):
     characterImage=preprocessImage(imagePath)
     return extractFeatures(characterImage)
 
+def imgToFeatureVector(image):
+    from Preprocessing import preprocessImage as pi
+    characterImage=pi(image)
+    return extractFeatures(characterImage)
+
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')
     for folder in folders:
@@ -161,9 +166,9 @@ if __name__=="__main__":
             print(f"folder: {test_case}")
             for f in glob.glob(test_case+'/*.png'):
                 outputFolder= featuresDir + f[7:-4]+".txt"
-                characterImage=preprocessImage(f)
-                featureVector=extractFeatures(characterImage)
-                writeFeatureVector(outputFolder,featureVector)
-
+                # characterImage=preprocessImage(f)
+                img = cv2.imread(f)
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+                featureVector=extractFeatures(img)
                 
-        
+                writeFeatureVector(outputFolder,featureVector)

@@ -105,7 +105,7 @@ trainModelTo = "model_train_rawfeatures.sav" # after you run train.py, the model
 englishName = {}
 englishName["ا"] = "alf"
 englishName["ب"] = "ba2"
-englishName["ت"] = "ta2"
+englishName["ت"] = "teh"
 englishName["ث"] = "tha2"
 englishName["ج"] = "geem"
 englishName["ح"] = "7a2"
@@ -157,3 +157,5 @@ englishName['9'] = 'nine'
 englishName['0'] = 'zero'
 englishName['('] = '('
 englishName[')'] = ')'
+
+arabicNames = {value: key for key,value in englishName.items()}
