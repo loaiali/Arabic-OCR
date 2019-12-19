@@ -5,3 +5,8 @@ venv/
 *.sav
 *.pyc
 *.log
+*.png
+text/
+scanned/
+raw_features/
+

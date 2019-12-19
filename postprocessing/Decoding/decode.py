@@ -52,13 +52,8 @@ def main():
 
             activations = classifier.eval()
 
-            hypothesis = fst.decode(
+            words = fst.decode(
                 BeamSearch(args.beam_width), activations, lmweight=args.lmweight)
-
-            hypothesis = list(hypothesis)
-            # print(hypothesis)
-            words = [outlabel for _, outlabel, _ in hypothesis if outlabel not in [
-                epsSym, startSym, endSym]]
 
             predictedSentences.append(' '.join(words))
             print(

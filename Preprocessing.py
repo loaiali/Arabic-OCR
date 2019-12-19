@@ -46,8 +46,15 @@ def textSkewCorrection(thresh):
 
 
 #textSkewCorrection(image)
-def preprocessImage(img):
+def preprocessImageFromPath(img):
     img = cv2.imread(img)
+    return img
+    return preprocessImage(img)
+
+def preprocessImage(img):
+    return img
     binarizedImage=binarize(img)
     textSkewCorrectedImg=textSkewCorrection(binarizedImage)
     return textSkewCorrectedImg
+    # img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+

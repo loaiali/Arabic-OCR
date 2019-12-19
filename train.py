@@ -18,11 +18,19 @@ def readData(dataDir):
     features = []
     labels = []
     folders = glob(f'{dataDir}\\*')
+    i = 0
+    # for folder in folders:
+    #     print(f"currently in folder: {folder}")
+    #     for subDir in glob(folder+'\*'):
+    #         for f in glob(subDir+'\*.txt'):
+    #             i += 1
+    # print ("you have total files =", i)
     for folder in folders:
         label = path_leaf(folder)
         print(f"currently in label: {label}")
-        for subDir in glob(folder+'/*'):    
-            for f in glob(subDir+'/*.txt'):
+        for subDir in glob(folder+'\*'):    
+            # print(f"currently in subDir: {subDir}")
+            for f in glob(subDir+'\*.txt'):
                 featureVector = np.loadtxt(f)
                 features.append(featureVector)
                 labels.append(label)
@@ -49,8 +57,8 @@ def readFeaturesAndLabels(dataDir):
         return x_train, x_test, y_train, y_test
 
     features, labels = readData(dataDir)
-    joblib.dump(features, 'features.sav')
-    joblib.dump(labels, 'labels.sav')
+    joblib.dump(features, 'features_all.sav')
+    joblib.dump(labels, 'labels_all.sav')
     return readFeaturesAndLabels(dataDir)
 
 

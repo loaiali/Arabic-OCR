@@ -44,7 +44,7 @@ class FST:
     def _load_indx_label_map(self, filename):
         """Read the index to label mapping file from disc.
         """
-        with open(filename) as f:
+        with open(filename, encoding="utf8") as f:
             self._index2label = [x.rstrip() for x in f]
 
         self._label2index = {epsSym: -2, startSym: -1}
@@ -84,7 +84,7 @@ class FST:
             self._arcs.append(Arc(len(self._arcs), src_state,
                                   dst_state, input_label_indx, output_label, cost))
 
-        with open(filename) as f:
+        with open(filename, encoding="utf8") as f:
             for line in f:
                 fields = line.rstrip().split()
                 if len(fields) <= 2:
@@ -232,5 +232,8 @@ class FST:
         )
 
         # return best path
-        return map(lambda arc_with_frame_num: (self._index2label[arc_with_frame_num[0].input_label_indx], arc_with_frame_num[0].output_label, arc_with_frame_num[1]),
+        hypothesis = map(lambda arc_with_frame_num: (self._index2label[arc_with_frame_num[0].input_label_indx], arc_with_frame_num[0].output_label, arc_with_frame_num[1]),
                    map(lambda arc_number_frame_num: (self._arcs[arc_number_frame_num[0]], arc_number_frame_num[1]), decoder.tok_backtrace()))
+        words = [outlabel for _, outlabel, _ in hypothesis if outlabel not in [
+            epsSym, startSym, endSym]]
+        return words
