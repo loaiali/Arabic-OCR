@@ -78,6 +78,7 @@ class BeamSearch:
         self.tokens += self.active_tokens
 
     def beam_prune(self):
+        # print(len(self.active_tokens))
         if len(self.active_tokens) > self.beam_width:
             self.active_tokens = sorted(
                 self.active_tokens, key=lambda x: x.model_score + x.lm_score, reverse=True)[0:self.beam_width]

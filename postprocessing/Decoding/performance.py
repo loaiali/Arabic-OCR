@@ -51,7 +51,7 @@ def sed(ref=None, hyp=None):
 def score(reference: [str] = None, hypothesis: [str] = None):
     assert(len(hypothesis) == len(reference))
     wer = ser = total_tokens_n = 0
-    letters = re.compile('[ء-ي ]')
+    letters = re.compile('[ء-ي]')
     for reference_string, hypothesis_string in zip(reference, hypothesis):
         reference_string_words = re.findall(letters, reference_string)
         hypothesis_string_words = re.findall(letters, hypothesis_string)
@@ -70,8 +70,8 @@ def score(reference: [str] = None, hypothesis: [str] = None):
 
 
 def read_trn_hyp_files(ref_trn=None, hyp_trn=None):
-    with open(ref_trn) as reference:
-        with open(hyp_trn) as hypothesis:
+    with open(ref_trn, encoding="utf-8") as reference:
+        with open(hyp_trn, encoding="utf-8") as hypothesis:
             return reference.readlines(), hypothesis.readlines()
 
 

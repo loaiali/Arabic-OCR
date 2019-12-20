@@ -225,15 +225,15 @@ class FST:
 
         best_tok = max(decoder.active_tokens,
                        key=lambda x: x.model_score + x.lm_score)
-        print(
-            "best cost: AM={} LM={} JOINT={}".format(
-                best_tok.model_score, best_tok.lm_score, best_tok.model_score + best_tok.lm_score
-            )
-        )
+        # print(
+        #     "best cost: AM={} LM={} JOINT={}".format(
+        #         best_tok.model_score, best_tok.lm_score, best_tok.model_score + best_tok.lm_score
+        #     )
+        # )
 
         # return best path
         hypothesis = map(lambda arc_with_frame_num: (self._index2label[arc_with_frame_num[0].input_label_indx], arc_with_frame_num[0].output_label, arc_with_frame_num[1]),
-                   map(lambda arc_number_frame_num: (self._arcs[arc_number_frame_num[0]], arc_number_frame_num[1]), decoder.tok_backtrace()))
+                         map(lambda arc_number_frame_num: (self._arcs[arc_number_frame_num[0]], arc_number_frame_num[1]), decoder.tok_backtrace()))
         words = [outlabel for _, outlabel, _ in hypothesis if outlabel not in [
             epsSym, startSym, endSym]]
         return words
