@@ -1,6 +1,7 @@
 from fst import FST
 from classifier import Classifier
 from beam_search import *
+from fakeDecode import fakeDecode
 import os.path
 import argparse
 import time
@@ -34,12 +35,15 @@ def main():
                         required=False, type=float, default=1)
     parser.add_argument('-beam_width', '--beam_width',
                         help='Maximum token count per frame', required=False, type=int, default=500)
+    parser.add_argument('-search', '--search',
+                        help='use seraching or raw classifiaction', required=False, type=str, default="True")
     args = parser.parse_args()
 
     classifier = Classifier()
     classifier.load_model(args.model)
 
-    fst = FST(args.decoding_graph, args.input_labels)
+    if(args.search == "True"):
+        fst = FST(args.decoding_graph, args.input_labels)
 
     predictedSentences = []
     all_time_start = time.time()
@@ -51,13 +55,16 @@ def main():
             # classifier.stack_features()
 
             activations = classifier.eval()
-
-            words = fst.decode(
-                BeamSearch(args.beam_width), activations, lmweight=args.lmweight)
+            word = []
+            if(args.search == "True"):
+                words = fst.decode(
+                    BeamSearch(args.beam_width), activations, lmweight=args.lmweight)
+            else:
+                words = fakeDecode(activations, args.input_labels)
 
             predictedSentences.append(' '.join(words))
-            print(
-                f"{len(sentence)} letters takes {int(time.time()-time_start)} seconds")
+            # print(
+            #     f"{len(sentence)} letters takes {int(time.time()-time_start)} seconds")
     except KeyboardInterrupt:
         print("[CTRL+C detected]")
         text = '\n'.join(predictedSentences)
