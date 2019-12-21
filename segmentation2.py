@@ -9,7 +9,7 @@ from skimage.morphology import skeletonize
 from scipy import stats
 import heapq
 
-SCALE_PERCENT = 400  
+SCALE_PERCENT = 400
 CHAR_DI=100
 
 def showScaled(img, text, scale):
@@ -19,6 +19,7 @@ def showScaled(img, text, scale):
     dim = (width, height)
     resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
+    cv2.destroyWindow(text)
     cv2.imshow(text, resized)
     cv2.waitKey(0)
 
@@ -29,7 +30,7 @@ def segmentation(histogram,thresold):
     i=0
     while i < len(histogram)-1 :
         #print(i)
-        while i < len(histogram)-1 and histogram[i+1]==0 and histogram[i] == 0:
+        while i < len(histogram)-1 and histogram[i+1] == 0 and histogram[i] == 0:
             i+=1
             #print(i)
         start=i
@@ -249,8 +250,10 @@ def isDal(wordImage2, start, end, baseLine,thres=4):
 
     his=np.sum(wordImage2,axis=0)
 
-    x_index=np.where(his>0)[0][0]
-    #print( x_index)
+    try:
+        x_index=np.where(his>0)[0][0]
+    except:
+        return False
     
 
     column =wordImage2[:, x_index]
@@ -485,7 +488,10 @@ def isStroke(wordImage2, start, end, baseLine, mfv, alfLength=13, error=5, error
     hisLine = hisLine[hisLine>0]
 
 
-    mfvHorizontal = stats.mode(hisLine)[0][0]
+    try:
+        mfvHorizontal = stats.mode(hisLine)[0][0]
+    except:
+        return False
 
     #print(mfvHorizontal,mfv)
 
@@ -752,12 +758,13 @@ def hasHole(wordImage,start,end):
 
 
 def wordSegmentation(binary):
-
     #print("in word segmentation")
+    # binary = cv2.dilate(binary, np.ones((2,1), np.uint8), iterations=1)
+    # binary = cv2.erode(binary, np.ones((2,2), np.uint8), iterations=4)
     binary2 = binary.copy()
+    # showScaled(binary2, "binary2", 100)
     binary2[binary == 255] = 0
     binary2[binary == 0] = 1
-
 
     sol = segmentation(np.sum(binary2, axis=1), 1)
     wordList=[]
@@ -765,7 +772,7 @@ def wordSegmentation(binary):
         begin, end = line
 
         width = int(binary2[begin:end][:].shape[1] * SCALE_PERCENT / 100)
-        height = int(binary2[begin:end][:].shape[0] * 100 / 100)
+        height = int(binary2[begin:end][:].shape[0] * SCALE_PERCENT / 100)
         dim = (width, height)
         #print((width, height, binary2[begin:end]
         #    [:].shape[1], binary2[begin:end][:].shape[0]))
@@ -776,12 +783,18 @@ def wordSegmentation(binary):
         binary3[binary3 == 1] = 0
         resized = cv2.resize(binary3, dim, interpolation=cv2.INTER_AREA)
         resizedcopy = resized.copy()
+        
 
-        resized[resizedcopy > 128] = 0
+        resized = cv2.morphologyEx(resized, cv2.MORPH_OPEN, np.ones((5,5),np.uint8) )
+        # showScaled(resized, "resized line", 50)
+        resized[resizedcopy >= 128] = 0
         resized[resizedcopy < 128] = 1
 
         ## words segminations
-        sol2 = segmentation(np.sum(resized, axis=0), 8)
+        histo2 = np.sum(resized, axis=0)
+        aa = np.array(histo2, dtype=np.uint8)
+        # histo2 = cv2.GaussianBlur(aa, (11,11), 20)
+        sol2 = segmentation(histo2, 7)
         lineList=[]
         for hor in sol2:
             begin2, end2 = hor
@@ -823,7 +836,7 @@ def charSegmentation(binary):
         resizedcopy = resized.copy()
 
         resized[resizedcopy > 128] = 0
-        resized[resizedcopy < 128] = 1
+        resized[resizedcopy <= 128] = 1
 
         ## words segminations
         sol2 = segmentation(np.sum(resized, axis=0), 8)
@@ -876,22 +889,27 @@ def charSegmentation(binary):
 
     return wordList
 
-def showWordCuts(img,wordList,color=255):
+def showWordCuts(img,wordList,color=(0, 0, 0), counterColor=(0,0,0)):
     binary =img
+    i = 0
+    bounryColor = color
+    boldEvery = 50
     for word in wordList:
         (begin, end) = word["rows"]
         (begin2, end2) = word["columns"]
-
+        bounryColor = counterColor if i % boldEvery == 0 else color
+        thick = 3 if i % boldEvery == 0 else 1
         binary = cv2.line(binary, (begin2, begin),
-                          (begin2, end), color, 1)
+                          (begin2, end), bounryColor, thick)
         binary = cv2.line(binary, (end2, begin),
-                          (end2, end), color, 1)
+                          (end2, end), bounryColor, thick)
         binary = cv2.line(binary, (begin2, begin),
-                                  (end2, begin), color, 1)
+                                  (end2, begin), bounryColor, thick)
         binary = cv2.line(binary, (begin2, end),
-                          (end2, end), color, 1)
+                          (end2, end), bounryColor, thick)
+        i += 1
 
-    cv2.imwrite("word_segmented.png", binary)
+    cv2.imwrite("word_segmented_2.png", binary)
 
 
 
@@ -921,13 +939,9 @@ def main():
                     cv2.waitKey(0)
 
                 
-                
-
-#main()
-
-
-
-
-
-
-
+def segmentationFromPath(imagePath):
+    img = cv2.imread(imagePath)
+    thre = binarize(img)
+    rotated = textSkewCorrection(thre)
+    wordsFromImage = charSegmentation(rotated)
+    return wordsFromImage, rotated
