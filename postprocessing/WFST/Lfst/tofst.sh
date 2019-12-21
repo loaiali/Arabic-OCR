@@ -11,3 +11,4 @@ cp L.fst ../LGfst/L.fst
 cp L.fst ../HLGfst/L.fst
 cp input.syms ../LGfst/
 cp input.syms ../HLGfst/
+cp input.syms ../Hfst/

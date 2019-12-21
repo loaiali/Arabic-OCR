@@ -86,9 +86,6 @@ class arpalm:
                 parts[current_ngram + 1] if len(parts) > current_ngram + 1 else 0)  # 0?!?! why not  -99
 
             ngrams[tuple(ngram)] = (ngram_score, backoff_score)
-            # if(current_ngram == 2):
-            #     print(tuple(ngram), (ngram_score, backoff_score))
-            #     print("------------")
 
         found_end = False
         with codecs.getreader('UTF-8')(open(filename, 'rb')) as f:
@@ -153,13 +150,13 @@ class arpalm:
             return state_map[ngram]
 
         for ngram in self.ngrams:
-            # if prune_5k and ngram[-1] not in unigrams:
-            #     continue
+            if prune_5k and ngram[-1] not in unigrams:
+                continue
             word = ngram[-1]
             history = ngram[:-1]
             future = ngram[1-self.max_ngram:]
             score = self.ngrams[ngram]
-            # assert(len(hist) == 0 or hist in self.ngrams)
+            assert(len(history) == 0 or history in self.ngrams)
             # insert the ngram arc
             src = ngram_to_state(history)
             dst = ngram_to_state(future)

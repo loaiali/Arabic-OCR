@@ -9,3 +9,5 @@ cp input.syms ../LGfst/output.syms
 
 cp G.fst ../HLGfst/G.fst
 cp input.syms ../HLGfst/output.syms
+
+# fstdraw  -portrait G.fst | dot -Tpdf > G.pdf

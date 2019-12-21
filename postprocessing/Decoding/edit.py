@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
-import sys, os, editdistance
+import sys
+import os
+import editdistance
 
 if len(sys.argv) != 3:
     sys.exit('USAGE: edit.py PREDICTED_PATH TRUTH_PATH')
@@ -21,4 +23,4 @@ for file_name in os.listdir(sys.argv[2]):
     print(f'{file_name}: {distance}')
 
 print(f'Total distance = {sum(distances)}')
-print('Average Accuracy = %.2f%%' % (100-sum(accuracies) / len(accuracies) * 100))
+print('Average Error = %.2f%%' % (100-sum(accuracies) / len(accuracies) * 100))

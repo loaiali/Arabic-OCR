@@ -59,11 +59,11 @@ cd Lfst && ./tofst.sh && cd ..
 echo 'produce language model fst'
 cd Gfst && ./tofst.sh && cd ..
 
-echo 'produce H fst'
-cd Hfst && ./tofst.sh && cd ..
-
 echo 'produce LG fst'
 cd LGfst && ./compose.sh && cd ..
+
+# echo 'produce H fst'
+# cd Hfst && ./tofst.sh && cd ..
 
 # echo 'produce HLG fst'
 # cd HLGfst && ./compose.sh && cd ..

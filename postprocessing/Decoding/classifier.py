@@ -17,8 +17,8 @@ arabic_letters_probs = [0.16464289, 0.05567354, 0.04702837, 0.00968891, 0.014832
 
 
 def getRandomEvals(inputFile="input_labels", text=""):
-    removalErrRate = .2
-    subErrRate = 0.2
+    removalErrRate = .0
+    subErrRate = .2
     arabic_letters = []
     with open(inputFile, encoding="utf-8") as f:
         arabic_letters = list(filter(len, f.read().split()))
@@ -30,18 +30,17 @@ def getRandomEvals(inputFile="input_labels", text=""):
         if(len(sent)-removed > 1 and random() < removalErrRate):
             removed += 1
             continue
-        activations.append([randrange(1, 10)
+        activations.append([randrange(7, 10)
                             for letter in arabic_letters])
         curr_letter_indx = arabic_letters.index(letter)
         activations[-1][curr_letter_indx] = randrange(
-            20, 30) if random() > subErrRate else randrange(1, 10)
+            15, 18) if random() > subErrRate else randrange(7, 10)
         from scipy.special import softmax
-        # activations[-1] = [a/max(activations[-1])
-        #                    for a in activations[-1]]
+        activations[-1] = np.sqrt(activations[-1])
         activations[-1] = softmax(activations[-1])
-        activations[-1] = np.log(activations[-1]) - \
-            np.log(arabic_letters_probs)
-    # np.savetxt("activations.txt", activations, fmt='%5f')
+        activations[-1] = np.log(activations[-1])
+        # - np.log(arabic_letters_probs)
+        # np.savetxt("activations.txt", np.exp(activations), fmt='%5f')
     return activations
 
 
