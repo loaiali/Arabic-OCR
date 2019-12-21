@@ -7,6 +7,7 @@ from Preprocessing import preprocessImageFromPath as preprocessImage, binarize
 import os
 import glob 
 from config import featuresDir
+from segmentation2 import showScaled
 '''
 There are 3 types of features
 1-Structural features:will be number of dots,number of end points,number of loops,
@@ -158,8 +159,10 @@ def imageToFeatureVector(imagePath):
     # return extractFeatures(characterImage)
 
 def imgToFeatureVector(img):
+    img = img.copy()
     img = cv2.resize(img, (28, 28))
-    img = binarize(img)
+    # showScaled(img, "imgimg", 100)
+    # img = binarize(img)
     return img.flatten()
 
 if __name__=="__main__":
