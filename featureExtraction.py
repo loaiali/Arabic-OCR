@@ -150,16 +150,17 @@ def writeFeatureVector(dir,features):
 
 
 def imageToFeatureVector(imagePath):
-    img = cv2.imread(f)
+    img = cv2.imread(imagePath)
+    img = cv2.resize(img, (28, 28))
     img = binarize(img)
     return img.flatten()
     # characterImage=preprocessImage(imagePath)
     # return extractFeatures(characterImage)
 
-def imgToFeatureVector(image):
-    from Preprocessing import preprocessImage as pi
-    characterImage=pi(image)
-    return extractFeatures(characterImage)
+def imgToFeatureVector(img):
+    img = cv2.resize(img, (28, 28))
+    img = binarize(img)
+    return img.flatten()
 
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')
