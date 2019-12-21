@@ -5,7 +5,7 @@ joblib==0.14.0
 kiwisolver==1.1.0
 matplotlib==3.1.2
 networkx==2.4
-nltk==3.2.4
+nltk==3.4.5
 numpy==1.17.4
 opencv-python==3.4.2.17
 Pillow==6.2.1
