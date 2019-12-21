@@ -59,8 +59,8 @@ class FST:
         self._arcs = []  # every arc in fst
 
         # this start-arc is where every token lives before the first frame of data
-        # self._arcs.append(
-        #     Arc(0, -1, 0, self._label2index[epsSym], epsSym, float(0)))
+        self._arcs.append(
+            Arc(0, -1, 0, self._label2index[epsSym], epsSym, float(0)))
 
         # Read the FST into our self_.arcs list.
         # Specialized functions parse "final state" and "normal arc"
@@ -94,10 +94,11 @@ class FST:
 
         # Pre-index all arcs coming out of a state to speed up transition-matrix creation.
         # each src state has a list of outgoing arcs idicies in _arcs list
-        state_outgoing_arcs = [() for _ in range(
+        self.state_outgoing_arcs = [() for _ in range(
             1 + max(arc.source_state for arc in self._arcs))]
         for source_state, arcs in itertools.groupby(sorted(self._arcs, key=lambda arc: arc.source_state), key=lambda arc: arc.source_state):
-            state_outgoing_arcs[source_state] = [arc.index for arc in arcs]
+            self.state_outgoing_arcs[source_state] = [
+                arc.index for arc in arcs]
 
         # We encode the graph transition structure as three sparse matrices. Each i,j element represents a
         # cost for a path through the graph to transition from arc number i to arc number j. The log_score
@@ -115,7 +116,7 @@ class FST:
             #     emit_col.append(arc.index)
             #     emit_row.append(arc.index)
             next_state = arc.target_state
-            for next_arc_index in state_outgoing_arcs[next_state]:
+            for next_arc_index in self.state_outgoing_arcs[next_state]:
                 next_arc = self._arcs[next_arc_index]
                 score = -next_arc[-1]  # to be replaced with .cost
                 if next_arc.input_label_indx >= 0:
@@ -154,8 +155,17 @@ class FST:
         """
 
         decoder.active_tokens = []
-        decoder.set_intial_active_token(Token(
-            id=0, prev_id=-1, arc_number=0, model_score=0., lm_score=self._arcs[0].cost, creation_timestep=-1))
+        prevArcI = -1
+        arcI = 0
+        score = 0.
+        # print(self.state_outgoing_arcs[self._arcs[arcI].target_state])
+        while(len(self.state_outgoing_arcs[self._arcs[arcI].target_state]) == 1):
+            score += self._arcs[arcI].cost
+            prevArcI = arcI
+            arcI = self.state_outgoing_arcs[self._arcs[arcI].target_state][0]
+        startToken = Token(
+            id=0, prev_id=-1, arc_number=arcI, model_score=0., lm_score=score, creation_timestep=-1)
+        decoder.set_intial_active_token(startToken)
 
         #  If the caller doesn't give us transition matrices, then use our own.
         if emit_trans is None:
@@ -171,16 +181,15 @@ class FST:
         # Here is the core of the search algorithm. It loops over time, using the acoustic model scores
         for t, obs_vector in enumerate(model_scores):
             # print(t)
-            arcs = [self._arcs[token.arc_number]
-                    for token in decoder.active_tokens]
+            # arcs = [self._arcs[token.arc_number]
+            #         for token in decoder.active_tokens]
 
-            lines = [
-                f'{arc.index} {arc.source_state} {arc.target_state} {self._index2label[arc.input_label_indx]} {arc.output_label} {arc.cost}\n'
-                for arc in arcs]
+            # lines = [
+            #     f'{arc.index} {arc.source_state} {arc.target_state} {self._index2label[arc.input_label_indx]} {arc.output_label} {arc.cost}\n'
+            #     for arc in arcs]
             # with open("active_arcs", "a") as aa:
             #     aa.writelines(lines)
 
-            # if(t > 0):  # ignore first state
             decoder.commit_active_tokens()
 
             # replace old active tokens with new ones (expantion of frontier)
