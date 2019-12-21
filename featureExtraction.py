@@ -161,9 +161,11 @@ def imageToFeatureVector(imagePath):
 def imgToFeatureVector(img):
     img = img.copy()
     img = cv2.resize(img, (28, 28))
+    gray=cv2.bitwise_not(img)
+    thresh = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     # showScaled(img, "imgimg", 100)
     # img = binarize(img)
-    return img.flatten()
+    return thresh.flatten()
 
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')
