@@ -150,7 +150,8 @@ def writeFeatureVector(dir,features):
 
 
 def imageToFeatureVector(imagePath):
-    img = cv2.imread(f)
+    img = cv2.imread(imagePath)
+    img = cv2.resize(img, (28, 28))
     img = binarize(img)
     return img.flatten()
     # characterImage=preprocessImage(imagePath)
