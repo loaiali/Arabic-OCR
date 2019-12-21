@@ -3,7 +3,7 @@ import numpy as np
 from skimage.morphology import skeletonize
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from Preprocessing import preprocessImageFromPath as preprocessImage
+from Preprocessing import preprocessImageFromPath as preprocessImage, binarize
 import os
 import glob 
 from config import featuresDir
@@ -150,8 +150,11 @@ def writeFeatureVector(dir,features):
 
 
 def imageToFeatureVector(imagePath):
-    characterImage=preprocessImage(imagePath)
-    return extractFeatures(characterImage)
+    img = cv2.imread(f)
+    img = binarize(img)
+    return img.flatten()
+    # characterImage=preprocessImage(imagePath)
+    # return extractFeatures(characterImage)
 
 def imgToFeatureVector(image):
     from Preprocessing import preprocessImage as pi
