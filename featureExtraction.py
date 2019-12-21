@@ -157,10 +157,10 @@ def imageToFeatureVector(imagePath):
     # characterImage=preprocessImage(imagePath)
     # return extractFeatures(characterImage)
 
-def imgToFeatureVector(image):
-    from Preprocessing import preprocessImage as pi
-    characterImage=pi(image)
-    return extractFeatures(characterImage)
+def imgToFeatureVector(img):
+    img = cv2.resize(img, (28, 28))
+    img = binarize(img)
+    return img.flatten()
 
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')
