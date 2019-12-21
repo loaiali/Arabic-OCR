@@ -17,29 +17,32 @@ arabic_letters_probs = [0.16464289, 0.05567354, 0.04702837, 0.00968891, 0.014832
 
 
 def getRandomEvals(inputFile="input_labels", text=""):
-    removalErrRate = 0.
-    subErrRate = 0.
+    removalErrRate = .2
+    subErrRate = 0.2
     arabic_letters = []
-    with open(inputFile) as f:
-        for line in f:
-            arabic_letters.append(line.split()[0])
-    arabic_letters = arabic_letters
+    with open(inputFile, encoding="utf-8") as f:
+        arabic_letters = list(filter(len, f.read().split()))
 
-    features_vectors = []
-
-    for letter in re.findall(arabic_letter, text):
-        if(random() < removalErrRate):
+    activations = []
+    sent = re.findall(arabic_letter, text)
+    removed = 0
+    for letter in sent:
+        if(len(sent)-removed > 1 and random() < removalErrRate):
+            removed += 1
             continue
-        features_vectors.append([randrange(1, 10)
-                                 for letter in arabic_letters])
+        activations.append([randrange(1, 10)
+                            for letter in arabic_letters])
         curr_letter_indx = arabic_letters.index(letter)
-        features_vectors[-1][curr_letter_indx] = randrange(20, 30) if random(
-        ) > subErrRate else 1.
+        activations[-1][curr_letter_indx] = randrange(
+            20, 30) if random() > subErrRate else randrange(1, 10)
         from scipy.special import softmax
-        features_vectors[-1] = softmax(features_vectors[-1])
-        features_vectors[-1] = np.log(features_vectors[-1]) - \
+        # activations[-1] = [a/max(activations[-1])
+        #                    for a in activations[-1]]
+        activations[-1] = softmax(activations[-1])
+        activations[-1] = np.log(activations[-1]) - \
             np.log(arabic_letters_probs)
-    return features_vectors
+    # np.savetxt("activations.txt", activations, fmt='%5f')
+    return activations
 
 
 class Classifier:
