@@ -971,12 +971,12 @@ def main():
         thre = binarize(img)
         rotated = textSkewCorrection(thre)
         wordList=charSegmentation(rotated)
-        print(len(wordList))
+        #print(len(wordList))
 
                 
                 
 
-main()
+#main()
 
 
 
