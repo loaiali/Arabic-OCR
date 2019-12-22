@@ -21,11 +21,12 @@ search graph params interface
 
 
 class OCR:
-    def __init__(self, decodingGraphPath, inputLabelsPath, beamWidth,lmWeight,withSearch):
+    def __init__(self, decodingGraphPath, inputLabelsPath, beamWidth,lmWeight,sentLen,withSearch):
         self.withSeach = withSearch
         if(withSearch):
             self.lmWeight = lmWeight
             self.beamWidth = beamWidth
+            self.sentLen = sentLen
             self.fst = FST(decodingGraphPath, inputLabelsPath)
         self.indexToLetters = None
         with open(inputLabelsPath,"r", encoding="utf8") as f:
@@ -54,8 +55,6 @@ class OCR:
         # [      {'rows': (), 'columns': (), 'srl': [{mid: int}]}  ,       {}, {}]
         wordsCount = 0
         letters = []
-        maxWordsCount = 1
-
         for wordDictionary in wordsSegmented:
             x1, x2, y1, y2 = *wordDictionary['rows'], *wordDictionary['columns']
             currentWordImage = img[x1:x2, y1:y2]
@@ -81,7 +80,7 @@ class OCR:
 
             wordsCount+=1
             if (self.withSeach):
-                if(wordsCount >= maxWordsCount):
+                if(wordsCount >= self.sentLen):
                     predictedWords = self._search(np.array(letters))
                     allImageWords.append(''.join(predictedWords))
                     letters.clear()
@@ -109,6 +108,8 @@ def main():
                         required=False, type=float, default=1)
     parser.add_argument('-beam_width', '--beam_width',
                         help='Maximum token count per frame', required=False, type=int, default=250)
+    parser.add_argument('-sentLen', '--sentLen',
+                        help='Number of words in a sentence given to search', required=True, type=int, default=1)
     parser.add_argument('-ilabels', '--ilabels',
                         help="Text files containing input labels",type=str, required=True, default="input_labels.txt")
     parser.add_argument('-refPath', '--refPath',
@@ -121,7 +122,7 @@ def main():
 
     args = parser.parse_args()
 
-    prog = OCR(args.graph, args.ilabels,lmWeight=1, beamWidth= 500,withSearch=True)
+    prog = OCR(args.graph, args.ilabels,lmWeight=args.lmWeight, beamWidth= args.beam_width,sentLen=args.sentLen,withSearch=True)
 
     for fileName in os.listdir(args.refPath):
         startTime = time()
@@ -134,6 +135,6 @@ def main():
         with open(os.path.join(args.predPath, fileName),encoding="utf-8") as f:
             f.write(predictedText)
 
-# python main.py -search 0 -graph LG0.txt -lmweight 1 -beam_width 250 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
+# python main.py -search 0 -graph LG0.txt -lmweight 1 -beam_width 250 -sentLen 15 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
 if __name__ == "__main__":
     main()
