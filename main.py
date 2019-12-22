@@ -122,7 +122,7 @@ def main():
 
     args = parser.parse_args()
 
-    prog = OCR(args.graph, args.ilabels,lmWeight=args.lmweight, beamWidth= args.beam_width,sentLen=args.sentLen,withSearch=True)
+    prog = OCR(args.graph, args.ilabels,lmWeight=args.lmweight, beamWidth= args.beam_width,sentLen=args.sentLen,withSearch=args.search)
 
     for fileName in os.listdir(args.refPath):
         startTime = time()
@@ -135,6 +135,6 @@ def main():
         with open(os.path.join(args.predPath, fileName),encoding="utf-8") as f:
             f.write(predictedText)
 
-# python main.py -search 0 -graph LG0.txt -lmweight 1 -beam_width 250 -sentLen 15 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
+# python main.py -search 0 -graph LG0.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
 if __name__ == "__main__":
     main()
