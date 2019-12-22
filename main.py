@@ -31,7 +31,7 @@ class OCR:
             self.fst = FST(decodingGraphPath, inputLabelsPath)
         self.indexToLetters = None
         with open(inputLabelsPath,"r", encoding="utf8") as f:
-            indexToLetters = {i: englishName[letter] for (i,letter) in enumerate(f.read().split())}
+            self.indexToLetters = {i: englishName[letter] for (i,letter) in enumerate(f.read().split())}
         self.featureExtracor = featureExtracor
                 
         
@@ -75,7 +75,7 @@ class OCR:
                 # lettersToScores = predictFromFeatureVector(featureVector, True)
 
                 if(self.withSeach):
-                    scoresSorted = [lettersToScores[indexToLetters[i]] for i in range(len(indexToLetters.keys()))]
+                    scoresSorted = [lettersToScores[self.indexToLetters[i]] for i in range(len(self.indexToLetters.keys()))]
                     scoresSorted = activationFunction(scoresSorted)
                     letters.append(np.array(scoresSorted))
                 else:
@@ -132,7 +132,7 @@ def main():
         startTime = time()
         print("Start image "+ fileName)
 
-        predictedText = prog.getTextFromImage(os.path.join(args.imgsPath, fileName))
+        predictedText = prog.getTextFromImage(os.path.join(args.imgsPath, fileName.replace('.txt', '.png')))
 
         print(f'Image {fileName} took {int(time=startTime)} seconds')
 
