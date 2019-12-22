@@ -4,12 +4,13 @@ import argparse
 import os
 from sklearn.externals import joblib
 from config import modelToPredict
-from segmentation2 import segmentationFromPath, showScaled
-from predict import predictFromImage, activationFunction
+from segmentation4 import segmentationFromPath, showScaled
+from predict import predictFromFeatureVector, activationFunction
 from postprocessing.Decoding.fst import FST
 from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
 from time import time
+from featureExtraction import extractFeatures
 # sys.path.append("postprocessing/Decoding")
 '''
 search graph params interface
@@ -21,7 +22,7 @@ search graph params interface
 
 
 class OCR:
-    def __init__(self, decodingGraphPath, inputLabelsPath, beamWidth,lmWeight,sentLen,withSearch):
+    def __init__(self, decodingGraphPath, inputLabelsPath, beamWidth,lmWeight,sentLen,withSearch, featureExtracor=extractFeatures):
         self.withSeach = withSearch
         if(withSearch):
             self.lmWeight = lmWeight
@@ -31,6 +32,7 @@ class OCR:
         self.indexToLetters = None
         with open(inputLabelsPath,"r", encoding="utf8") as f:
             indexToLetters = {i: englishName[letter] for (i,letter) in enumerate(f.read().split())}
+        self.featureExtracor = featureExtracor
                 
         
     def getTextFromImage(self, imagePath):
@@ -68,7 +70,9 @@ class OCR:
                 midi = srl[i]['mid']
                 currentCharImage = currentWordImage[:,midii:midi]
                 # showScaled(currentCharImage, "currentCharImage", 100)
-                lettersToScores = predictFromImage(currentCharImage, True)
+                featureVector = self.featureExtracor(currentCharImage)
+                lettersToScores = predictFromFeatureVector(featureVector, withAllScores=True)
+                # lettersToScores = predictFromFeatureVector(featureVector, True)
 
                 if(self.withSeach):
                     scoresSorted = [lettersToScores[indexToLetters[i]] for i in range(len(indexToLetters.keys()))]
