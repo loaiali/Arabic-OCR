@@ -1,13 +1,15 @@
 from sklearn.externals import joblib
 from config import modelToPredict
 from segmentation2 import segmentationFromPath, showScaled
-from predict import predictFromImage, activationFunction
+from predict import predictFromFeatureVector, activationFunction
 import sys
 import numpy as np
 # sys.path.append("postprocessing/Decoding")
 from postprocessing.Decoding.fst import FST
 from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
+from featureExtraction import extractFeatures
+import ticktock
 '''
 search graph params interface
 [
@@ -16,7 +18,7 @@ search graph params interface
 '''
 
 
-
+log = False
 class OCR:
     def __init__(self, decodingGraphPath, inputLabelsPath, lmWeight, beamWidth):
         self.fst = FST(decodingGraphPath, inputLabelsPath)
@@ -37,7 +39,9 @@ class OCR:
             ]
         '''
         allImageWords = []
+        # ticktock.tick("segmentation start", log)
         wordsSegmented, img = segmentationFromPath(imagePath)
+        # ticktock.tock("segmentation end", log)
         # joblib.dump(wordsSegmented, "wordsSegmented.test")
         # joblib.dump(img, "img.test")
         # wordsSegmented, img = joblib.load("wordsSegmented.test"), joblib.load("img.test")
@@ -58,10 +62,17 @@ class OCR:
                 midi = srl[i]['mid']
                 currentCharImage = currentWordImage[:,midii:midi]
                 # showScaled(currentCharImage, "currentCharImage", 100)
-                lettersToScores = predictFromImage(currentCharImage, True)
+        
+                # ticktock.tick("extract features start", log)
+                features = extractFeatures(currentCharImage)
+                # ticktock.tock("extract features end", log)
 
-                # letterclassifer = arabicNames[sorted(lettersToScores.items(), key=lambda x: x[1])[-1][0]]
-                # allImageWords.append(letterclassifer) # TODO : remove this shit
+                # ticktock.tick("predictFromFeatureVector start", log)
+                lettersToScores = predictFromFeatureVector(features, withAllScores=True)
+                # ticktock.tock("predictFromFeatureVector end", log)
+
+                letterclassifer = arabicNames[sorted(lettersToScores.items(), key=lambda x: x[1])[-1][0]]
+                allImageWords.append(letterclassifer) # TODO : remove this shit
                 # print(letterclassifer)
                 
                 indexToLetters = None
@@ -75,15 +86,15 @@ class OCR:
             wordsCount += 1
             if (wordsCount >= 1):
                 # TODO : uncomment this shit
-                predictedWords = self._search(np.array(words15))
+                # predictedWords = self._search(np.array(words15))
                 # print(predictedWords)
                 # yield predictedWords
-                allImageWords.append(predictedWords)
+                # allImageWords.append(predictedWords)
                 wordsCount = 0
                 words15.clear()
             # showScaled(currentCharImage, 'currentChar', 150)
         txt = ' '.join([''.join(w) for w in allImageWords])
-        with open("hypo_error.txt", 'w', encoding='utf-8') as f:
+        with open("hypo_error_clfonly.txt", 'w', encoding='utf-8') as f:
             f.write(txt)
         return ' '.join(allImageWords)
 
@@ -96,7 +107,7 @@ class OCR:
 
 def main():
     prog = OCR("H1.txt", "input_labels.txt", 10, 250)
-    imagePath = "scanned/capr1.png"
+    imagePath = "scanned/capr2.png"
     words = prog.getWordsFromImage(imagePath)
     print(words)
 

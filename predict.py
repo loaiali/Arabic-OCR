@@ -4,7 +4,7 @@ from config import modelToPredict as modelPath
 from sys import argv
 from featureExtraction import imgToFeatureVector, imageToFeatureVector
 from sklearn.metrics import classification_report
-
+import ticktock
 
 arabic_letters_probs = [
     0.16464289, 0.05567354, 0.04702837, 0.00968891, 0.01483219, 0.07832473,
@@ -23,7 +23,9 @@ model = None
 def predictFromFeatureVector(xtest, withAllScores = False):
     global model
     if (model is None):
+        ticktock.tick("loading the model")
         model = joblib.load(modelPath)
+        ticktock.tock("model loaded")
 
     # print(model.score())
     if(not withAllScores):
