@@ -7,9 +7,8 @@ fstcompose L_sorted.fst G_sorted.fst  | fstarcsort  --sort_type="olabel" > HL_so
 fstcompose HL_sorted.fst G_sorted.fst | fstprint > composed.txt
 
 
-echo 'remove backoff terminate and disampig symbols form LG.txt'
-sed -i 's/D[0-9]\+\|ـجـ\|ـأـ/٭/g' composed.txt
-
+echo 'remove backoff, terminate and disampig symbols form LG.txt'
+sed -i 's/D[0-9]\+\|ـجـ\|ـأـ\|ـتـ/٭/g' composed.txt
 
 fstcompile --isymbols=input.syms --osymbols=output.syms --keep_osymbols --keep_isymbols < composed.txt | fstdeterminize | fstminimize | fstprint  > HLG_opt.txt;
 

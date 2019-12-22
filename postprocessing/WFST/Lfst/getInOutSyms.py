@@ -5,7 +5,8 @@ disampg = "D"
 epsSym = '٭'
 startSym = 'ـسـ'
 endSym = 'ـأـ'
-# terminateSym = 'ـتـ'
+terminateSym = 'ـتـ'
+spaceSym = 'ـ'
 backOffSym = 'ـجـ'
 
 
@@ -34,7 +35,8 @@ def getOutSymsAndSetMssing(filename):
 
 
 def getInSymsAndSetMssing(filename):
-    missingInputs = [backOffSym, endSym, startSym, epsSym]
+    missingInputs = [backOffSym, endSym,
+                     startSym, epsSym, terminateSym, spaceSym]
     lines = []
     with open(filename, 'r') as inputs:
         lines = inputs.readlines()

@@ -63,8 +63,8 @@ def main():
                 words = fakeDecode(activations, args.input_labels)
 
             predictedSentences.append(' '.join(words))
-            # print(
-            #     f"{len(sentence)} letters takes {int(time.time()-time_start)} seconds")
+            print(
+                f"{len(sentence)} letters takes {int(time.time()-time_start)} seconds")
     except KeyboardInterrupt:
         print("[CTRL+C detected]")
         text = '\n'.join(predictedSentences)

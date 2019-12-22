@@ -12,7 +12,7 @@ echo corpusFile is $corpusFile , vocabSize is $vocabSize, ngram word order is $w
 
 #for file in `ls ./text | sort -R | head -$corpusSize`;
 # echo normalize dataset $corpusFile
-# ./normalize.sh $corpusFile
+./normalize.sh $corpusFile
 
 ngram-count -text arabic.norm.txt -order 1 -write arabic.1grams
 sort -k 2,2 -n -r arabic.1grams | head -$vocabSize > arabic.top$vocabSize.1grams

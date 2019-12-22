@@ -7,7 +7,8 @@ disampg = "D"
 epsSym = '٭'
 startSym = 'ـسـ'
 endSym = 'ـأـ'
-# terminateSym = 'ـتـ'
+terminateSym = 'ـتـ'
+spaceSym = 'ـ'
 backOffSym = 'ـجـ'
 
 
@@ -15,6 +16,7 @@ arabic_word = re.compile('[\u0621-\u064A]+')
 additional_letters = "لا|لأ|لآ|لإ"
 arabic_letter = re.compile(f'{additional_letters}|[\u0621-\u064A]')
 # disampg_char = re.compile(f'{disampg}/d+')
+reservedDisampig = ["D0", "D00"]
 
 arabicVocabStart = 4
 
@@ -35,14 +37,19 @@ def addDisampigInputSyms(disampg, disampgKey):
     lines[-1] = lines[-1].replace('\n', '')
     num = len(lines)
     for i in range(disampgKey):
-        lines.append(f'\n{disampg+str(i+1)} {int(num)+i}')
+        lines.append(f'\n{disampg+str(i+1)} {int(num)}')
+        num += 1
+
+    for rd in reservedDisampig:
+        lines.append(f'\n{rd} {int(num)}')
+        num += 1
 
     with open('input.syms', 'w') as f:
         f.writelines(lines)
 
 
 def resolveDisambiquity(lexicons):
-    disampgKey = 0
+    disampgKey = 1
 
     words = sorted(lexicons.keys())
     for i, word in enumerate(words):
@@ -59,9 +66,13 @@ def lexiconToFst(lexicons):
     fst = [
         f'{0} {1} {startSym} {startSym}',
         f'{1} {1} {backOffSym} {backOffSym}',
+        f'{1} {2} {spaceSym} {startSym}',  # may be restart a new sentnece
+        f'{2} {1} {reservedDisampig[0]} {epsSym}',
+        f'{1} {3} {spaceSym} {epsSym}',  # seprate between words
+        f'{3} {1} {reservedDisampig[1]} {epsSym}',
     ]
     intial_state = 1
-    avail_state = 2
+    avail_state = 4
     for word, letters in lexicons.items():
         for i, letter in enumerate(letters):
             src, dst, inp, out = (intial_state, avail_state, letter, epsSym)
@@ -82,8 +93,11 @@ def lexiconToFst(lexicons):
 
             fst.append(f'{src} {dst} {inp} {out}')
 
-    final = avail_state
-    fst.append(f'{intial_state} {final} {endSym} {endSym}')
+    end = avail_state
+    final = end+1
+    # alwys end with space
+    fst.append(f'{intial_state} {end} {spaceSym} {endSym}')
+    fst.append(f'{end} {final} {terminateSym} {epsSym}')
     fst.append(f'{final}')
     return fst
 
