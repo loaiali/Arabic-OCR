@@ -23,4 +23,4 @@ for file_name in os.listdir(sys.argv[2]):
     print(f'{file_name}: {distance}')
 
 print(f'Total distance = {sum(distances)}')
-print('Average Error = %.2f%%' % (100-sum(accuracies) / len(accuracies) * 100))
+print('Average Accuracy = %.2f%%' % (sum(accuracies) / len(accuracies) * 100))
