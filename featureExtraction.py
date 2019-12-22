@@ -3,10 +3,11 @@ import numpy as np
 from skimage.morphology import skeletonize
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from Preprocessing import preprocessImageFromPath as preprocessImage
+from Preprocessing import preprocessImageFromPath as preprocessImage, binarize
 import os
 import glob 
 from config import featuresDir
+from segmentation2 import showScaled
 '''
 There are 3 types of features
 1-Structural features:will be number of dots,number of end points,number of loops,
@@ -150,13 +151,21 @@ def writeFeatureVector(dir,features):
 
 
 def imageToFeatureVector(imagePath):
-    characterImage=preprocessImage(imagePath)
-    return extractFeatures(characterImage)
+    img = cv2.imread(imagePath)
+    img = cv2.resize(img, (28, 28))
+    img = binarize(img)
+    return img.flatten()
+    # characterImage=preprocessImage(imagePath)
+    # return extractFeatures(characterImage)
 
-def imgToFeatureVector(image):
-    from Preprocessing import preprocessImage as pi
-    characterImage=pi(image)
-    return extractFeatures(characterImage)
+def imgToFeatureVector(img):
+    img = img.copy()
+    img = cv2.resize(img, (28, 28))
+    gray=cv2.bitwise_not(img)
+    thresh = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    # showScaled(img, "imgimg", 100)
+    # img = binarize(img)
+    return thresh.flatten()
 
 if __name__=="__main__":
     folders = glob.glob('dataset\\*')

@@ -67,7 +67,12 @@ def main():
     x_train, x_test, y_train, y_test = readFeaturesAndLabels(featuresDir)
     tock("done")
 
-    tick(f"training the svm classifier over x_train, y_train with config {trainConfig}")
+    tick("converting to np arrays")
+    x_train = np.array(x_train, dtype=np.int16)
+    x_test = np.array(x_test, dtype=np.int16)
+    tock("done")
+
+    tick(f"training the svm classifier over x_train, y_train with config {trainConfig}")    
     classifier = train(x_train, y_train, trainConfig)
     tock("classifier trained")
 
