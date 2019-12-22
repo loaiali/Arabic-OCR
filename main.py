@@ -122,7 +122,7 @@ def main():
 
     args = parser.parse_args()
 
-    prog = OCR(args.graph, args.ilabels,lmWeight=args.lmWeight, beamWidth= args.beam_width,sentLen=args.sentLen,withSearch=True)
+    prog = OCR(args.graph, args.ilabels,lmWeight=args.lmweight, beamWidth= args.beam_width,sentLen=args.sentLen,withSearch=True)
 
     for fileName in os.listdir(args.refPath):
         startTime = time()
