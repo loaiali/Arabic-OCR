@@ -4,7 +4,7 @@ datasetDir = "dataset"
 featuresDir = "raw_features"
 
 ############################################# Tuning #########################################################################
-startIndex_tune = 11 # update it if you comment some configs
+startIndex_tune = 11  # update it if you comment some configs
 configsToRun = [3, 4, 5, 6, 8, 9, 10, 103, 102]
 config_tune = [
     # N = 1 to 10
@@ -99,8 +99,10 @@ config_tune = [
 
 ############################################# Training and predicting ########################################################
 currentTrainingConfig = {'gamma': 'auto', 'C': 80}
-modelToPredict = "model.sav" # when you run predict.py, this is the model loaded
-trainModelTo = "model_train_rawfeatures.sav" # after you run train.py, the model will be saved to this file
+# when you run predict.py, this is the model loaded
+modelToPredict = "model_train_rawfeatures.sav"
+# after you run train.py, the model will be saved to this file
+trainModelTo = "model_train_rawfeatures.sav"
 
 englishName = {}
 englishName["ا"] = "alf"
@@ -158,4 +160,4 @@ englishName['0'] = 'zero'
 englishName['('] = '('
 englishName[')'] = ')'
 
-arabicNames = {value: key for key,value in englishName.items()}
+arabicNames = {value: key for key, value in englishName.items()}

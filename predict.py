@@ -29,8 +29,10 @@ def predictFromFeatureVector(xtest, withAllScores=False):
     # return model.decision_function([xtest])[0]
     # print(model.classes_[np.argmax(model.decision_function([xtest])[0])])
     #! return with dictionary for every class
+    scores = model.predict_log_proba([xtest])[0]
+
     mapping = {label: score for label, score in zip(
-        model.classes_, model.decision_function([xtest])[0])}
+        model.classes_, scores)}
     return mapping
 
 

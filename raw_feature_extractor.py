@@ -6,6 +6,14 @@ from segmentation4 import showScaled
 import os
 
 
+def extractFeatures(img):
+    img = cv2.resize(img, (28, 28))
+    gray = cv2.bitwise_not(img)
+    thresh = cv2.threshold(
+        gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    return np.true_divide(thresh.flatten(), 255)
+
+
 class RawFeatureExtractor:
     def __init__(self, datasetPath="dataset", outputPath="raw_features"):
         self.datasetPath = datasetPath

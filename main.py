@@ -10,7 +10,7 @@ from postprocessing.Decoding.fst import FST
 from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
 from time import time
-from featureExtraction import extractFeatures
+from raw_feature_extractor import extractFeatures
 # sys.path.append("postprocessing/Decoding")
 '''
 search graph params interface
@@ -82,7 +82,7 @@ class OCR:
                 if(self.withSeach):
                     scoresSorted = [lettersToScores[self.indexToLetters[i]]
                                     for i in range(len(self.indexToLetters))]
-                    scoresSorted = activationFunction(scoresSorted)
+                    # scoresSorted = activationFunction(scoresSorted)
                     lettersScores.append(np.array(scoresSorted))
                 else:
                     predLetter = arabicNames[sorted(
@@ -171,6 +171,6 @@ def main():
             f.write(predictedText)
 
 
-# python main.py -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
+# python3 main.py -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
 if __name__ == "__main__":
     main()
