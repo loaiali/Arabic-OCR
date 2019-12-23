@@ -2,8 +2,10 @@ from glob import glob
 import numpy as np
 import cv2
 from Preprocessing import binarize
-from segmentation2 import showScaled
+from segmentation4 import showScaled
 import os
+
+
 class RawFeatureExtractor:
     def __init__(self, datasetPath="dataset", outputPath="raw_features"):
         self.datasetPath = datasetPath
@@ -21,7 +23,6 @@ class RawFeatureExtractor:
                     img = cv2.resize(img, (28, 28))
                     img = binarize(img)
                     self.writeFeatureVector(outputFolder, img.flatten())
-
 
     def writeFeatureVector(self, outputFolder, featureVector):
         os.makedirs(os.path.dirname(outputFolder), exist_ok=True)

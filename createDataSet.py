@@ -5,7 +5,7 @@ import os
 import random
 from Preprocessing import textSkewCorrection, binarize
 from scipy import ndimage
-from segmentation2 import wordSegmentation, showScaled, showWordCuts, charSegmentation
+from segmentation4 import wordSegmentation, showScaled, showWordCuts, charSegmentation
 import pyarabic.araby as araby
 import pyarabic.number as number
 import nltk

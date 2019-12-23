@@ -7,7 +7,7 @@ from Preprocessing import preprocessImageFromPath as preprocessImage, binarize
 import os
 import glob 
 from config import featuresDir
-from segmentation2 import showScaled
+from segmentation4 import showScaled
 '''
 There are 3 types of features
 1-Structural features:will be number of dots,number of end points,number of loops,
