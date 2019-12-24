@@ -11,6 +11,7 @@ from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
 from time import time
 from raw_feature_extractor import extractFeatures
+import ticktock
 # sys.path.append("postprocessing/Decoding")
 '''
 search graph params interface
@@ -48,7 +49,7 @@ class OCR:
             ]
         '''
         allImageWords = []
-        wordsSegmented, img = segmentationFromPath(imagePath)
+        wordsSegmented, img = segmentationFromPath(imagePath, ticktock)
         # joblib.dump(wordsSegmented, "wordsSegmented.test")
         # joblib.dump(img, "img.test")
         # wordsSegmented, img = joblib.load("wordsSegmented.test"), joblib.load("img.test")
@@ -150,6 +151,8 @@ def main():
     parser.add_argument(
         '-predPath', '--predPath', help='path to write output hypotheses', type=str, required=True, default=None)
     parser.add_argument(
+        '-tp', '--timePath', help='path to write output time for each image', type=str, required=True, default=None)
+    parser.add_argument(
         '-imgsPath', '--imgsPath', help='Path where scanned images live', type=str, required=False, default='./scanned/')
 
     args = parser.parse_args()
@@ -158,19 +161,21 @@ def main():
     prog = OCR(args.graph, args.ilabels, lmWeight=args.lmweight,
                beamWidth=args.beam_width, sentLen=args.sentLen, withSearch=withSearch)
 
+    timeFile = open(args.timePath, 'w')
     for fileName in os.listdir(args.refPath):
         startTime = time()
         print("Start image " + fileName)
 
         predictedText = prog.getTextFromImage(os.path.join(
             args.imgsPath, fileName.replace('.txt', '.png')))
+        elapsedSeconds = ticktock.tock("", log=False)
 
         print(f'Image {fileName} took {int(time()-startTime)} seconds')
-
         with open(os.path.join(args.predPath, fileName), 'w', encoding="utf-8") as f:
             f.write(predictedText)
+        timeFile.write(str(elapsedSeconds) + '\n')
+    timeFile.close()
 
-
-# python3 main.py -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
+# python3 main.py --timePath ./output/running_time.txt -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./output/text/
 if __name__ == "__main__":
     main()
