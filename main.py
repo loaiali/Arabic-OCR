@@ -145,9 +145,9 @@ def main():
                         help='Number of words in a sentence given to search', required=True, type=int, default=1)
     parser.add_argument('-ilabels', '--ilabels',
                         help="Text files containing input labels", type=str, required=True, default="input_labels.txt")
-    parser.add_argument('-refPath', '--refPath',
-                        help="Folder continaing refernces text files which are also image files names to run OCR on it",
-                        type=str, required=True, default=None)
+    # parser.add_argument('-refPath', '--refPath',
+    #                     help="Folder continaing refernces text files which are also image files names to run OCR on it",
+    #                     type=str, required=True, default=None)
     parser.add_argument(
         '-predPath', '--predPath', help='path to write output hypotheses', type=str, required=True, default=None)
     parser.add_argument(
@@ -162,12 +162,11 @@ def main():
                beamWidth=args.beam_width, sentLen=args.sentLen, withSearch=withSearch)
 
     timeFile = open(args.timePath, 'w')
-    for fileName in os.listdir(args.refPath):
+    for fileName in os.listdir(args.imgsPath):
         startTime = time()
         print("Start image " + fileName)
 
-        predictedText = prog.getTextFromImage(os.path.join(
-            args.imgsPath, fileName.replace('.txt', '.png')))
+        predictedText = prog.getTextFromImage(args.imgsPath + "/" + fileName)
         elapsedSeconds = ticktock.tock("", log=False)
 
         print(f'Image {fileName} took {int(time()-startTime)} seconds')
@@ -176,6 +175,6 @@ def main():
         timeFile.write(str(elapsedSeconds) + '\n')
     timeFile.close()
 
-# python3 main.py --timePath ./output/running_time.txt -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./output/text/
+# python3 main.py --timePath ./output/running_time.txt -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -predPath ./output/text/
 if __name__ == "__main__":
     main()
