@@ -975,7 +975,7 @@ def main():
 
                 
                 
-from test import segmentationFromPath_ammar
+# from test import segmentationFromPath_ammar
 def segmentationFromPath(imagePath, ticktock):
     # return segmentationFromPath_ammar(imagePath)
     img = cv2.imread(imagePath)
