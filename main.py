@@ -170,7 +170,7 @@ def main():
         elapsedSeconds = ticktock.tock("", log=False)
 
         print(f'Image {fileName} took {int(time()-startTime)} seconds')
-        with open(os.path.join(args.predPath, fileName), 'w', encoding="utf-8") as f:
+        with open(os.path.join(args.predPath, fileName.replace(".png", ".txt")), 'w', encoding="utf-8") as f:
             f.write(predictedText)
         timeFile.write(str(elapsedSeconds) + '\n')
     timeFile.close()
