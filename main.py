@@ -92,30 +92,30 @@ class OCR:
 
             wordsCount += 1
             if (self.withSeach):
-                if(self.sentLen > 1):
+                # if(self.sentLen >= 1):
                     # add space
-                    spaceScoresForPrevLetters = np.log(
-                        0.0000001)*np.ones((len(lettersScores), 1))
-                    lettersWithSpacesScores = np.hstack(
-                        (lettersScores, spaceScoresForPrevLetters))
+                spaceScoresForPrevLetters = np.log(
+                    0.0001)*np.ones((len(lettersScores), 1))
+                lettersWithSpacesScores = np.hstack(
+                    (lettersScores, spaceScoresForPrevLetters))
 
-                    spaceScoresForSpace = np.log(
-                        0.0000001*np.ones(len(lettersWithSpacesScores[0])))
-                    spaceScoresForSpace[-1] = np.log(1)
+                spaceScoresForSpace = np.log(
+                    .6/len(lettersWithSpacesScores[0])*np.ones(len(lettersWithSpacesScores[0])))
+                spaceScoresForSpace[-1] = np.log(.4)
 
-                    if(len(words)):
-                        words = np.vstack((words, lettersWithSpacesScores))
-                    else:
-                        words = lettersWithSpacesScores
-                    words = np.vstack((words, spaceScoresForSpace))
+                if(len(words)):
+                    words = np.vstack((words, lettersWithSpacesScores))
                 else:
-                    words = np.array(lettersScores.copy())
+                    words = lettersWithSpacesScores
+                words = np.vstack((words, spaceScoresForSpace))
+                # else:
+                #     words = np.array(lettersScores.copy())
 
-                if(wordsCount >= self.sentLen):
-                    print(words.shape)
+                if(wordsCount == self.sentLen or wordDictionary == wordsSegmented[-1]):
+                    # print(words.shape)
                     predictedWords = self._search(words)
-                    print(predictedWords)
-                    print(len(predictedWords))
+                    # print(predictedWords)
+                    # print(len(predictedWords))
                     allImageWords.append(' '.join(predictedWords))
                     words = []
                     wordsCount = 0
