@@ -8,7 +8,7 @@ from scipy import ndimage
 from skimage.morphology import skeletonize
 from scipy import stats
 import heapq
-
+from skimage.morphology import thin
 
 
 
@@ -21,7 +21,7 @@ def showScaled(img, text, scale):
     height = int(img.shape[0] * scale / 100)
     dim = (width, height)
     resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
+    cv2.destroyWindow(text)
     cv2.imshow(text, resized)
     cv2.waitKey(0)
 
@@ -985,9 +985,11 @@ def main():
 
                 
                 
-
-def segmentationFromPath(imagePath):
+# from test import segmentationFromPath_ammar
+def segmentationFromPath(imagePath, ticktock):
+    # return segmentationFromPath_ammar(imagePath)
     img = cv2.imread(imagePath)
+    ticktock.tick("start time")
     thre = binarize(img)
     rotated = textSkewCorrection(thre)
     wordsFromImage = charSegmentation(rotated)
@@ -995,9 +997,3 @@ def segmentationFromPath(imagePath):
 
 
     return wordsFromImage, rotated
-
-
-
-
-
-

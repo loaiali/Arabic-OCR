@@ -11,6 +11,7 @@ from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
 from time import time
 from raw_feature_extractor import extractFeatures
+import ticktock
 # sys.path.append("postprocessing/Decoding")
 '''
 search graph params interface
@@ -87,30 +88,30 @@ class OCR:
 
             wordsCount += 1
             if (self.withSeach):
-                if(self.sentLen > 1):
+                # if(self.sentLen >= 1):
                     # add space
-                    spaceScoresForPrevLetters = np.log(
-                        0.0000001)*np.ones((len(lettersScores), 1))
-                    lettersWithSpacesScores = np.hstack(
-                        (lettersScores, spaceScoresForPrevLetters))
+                spaceScoresForPrevLetters = np.log(
+                    0.0001)*np.ones((len(lettersScores), 1))
+                lettersWithSpacesScores = np.hstack(
+                    (lettersScores, spaceScoresForPrevLetters))
 
-                    spaceScoresForSpace = np.log(
-                        0.0000001*np.ones(len(lettersWithSpacesScores[0])))
-                    spaceScoresForSpace[-1] = np.log(1)
+                spaceScoresForSpace = np.log(
+                    .6/len(lettersWithSpacesScores[0])*np.ones(len(lettersWithSpacesScores[0])))
+                spaceScoresForSpace[-1] = np.log(.4)
 
-                    if(len(words)):
-                        words = np.vstack((words, lettersWithSpacesScores))
-                    else:
-                        words = lettersWithSpacesScores
-                    words = np.vstack((words, spaceScoresForSpace))
+                if(len(words)):
+                    words = np.vstack((words, lettersWithSpacesScores))
                 else:
-                    words = np.array(lettersScores.copy())
+                    words = lettersWithSpacesScores
+                words = np.vstack((words, spaceScoresForSpace))
+                # else:
+                #     words = np.array(lettersScores.copy())
 
-                if(wordsCount >= self.sentLen):
-                    print(words.shape)
+                if(wordsCount == self.sentLen or wordDictionary == wordsSegmented[-1]):
+                    # print(words.shape)
                     predictedWords = self._search(words)
-                    print(predictedWords)
-                    print(len(predictedWords))
+                    # print(predictedWords)
+                    # print(len(predictedWords))
                     allImageWords.append(' '.join(predictedWords))
                     words = []
                     wordsCount = 0
@@ -140,11 +141,13 @@ def main():
                         help='Number of words in a sentence given to search', required=True, type=int, default=1)
     parser.add_argument('-ilabels', '--ilabels',
                         help="Text files containing input labels", type=str, required=True, default="input_labels.txt")
-    parser.add_argument('-refPath', '--refPath',
-                        help="Folder continaing refernces text files which are also image files names to run OCR on it",
-                        type=str, required=True, default=None)
+    # parser.add_argument('-refPath', '--refPath',
+    #                     help="Folder continaing refernces text files which are also image files names to run OCR on it",
+    #                     type=str, required=True, default=None)
     parser.add_argument(
         '-predPath', '--predPath', help='path to write output hypotheses', type=str, required=True, default=None)
+    parser.add_argument(
+        '-tp', '--timePath', help='path to write output time for each image', type=str, required=True, default=None)
     parser.add_argument(
         '-imgsPath', '--imgsPath', help='Path where scanned images live', type=str, required=False, default='./scanned/')
 
@@ -154,19 +157,20 @@ def main():
     prog = OCR(args.graph, args.ilabels, lmWeight=args.lmweight,
                beamWidth=args.beam_width, sentLen=args.sentLen, withSearch=withSearch)
 
-    for fileName in os.listdir(args.refPath):
+    timeFile = open(args.timePath, 'w')
+    for fileName in os.listdir(args.imgsPath):
         startTime = time()
         print("Start image " + fileName)
 
-        predictedText = prog.getTextFromImage(os.path.join(
-            args.imgsPath, fileName.replace('.txt', '.png')))
+        predictedText = prog.getTextFromImage(args.imgsPath + "/" + fileName)
+        elapsedSeconds = ticktock.tock("", log=False)
 
         print(f'Image {fileName} took {int(time()-startTime)} seconds')
-
-        with open(os.path.join(args.predPath, fileName), 'w', encoding="utf-8") as f:
+        with open(os.path.join(args.predPath, fileName.replace(".png", ".txt")), 'w', encoding="utf-8") as f:
             f.write(predictedText)
+        timeFile.write(str(elapsedSeconds) + '\n')
+    timeFile.close()
 
-
-# python3 main.py -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -refPath ./reference/ -predPath ./predicted
+# python3 main.py --timePath ./output/running_time.txt -search False -graph LG3g.txt -lmweight 1 -beam_width 250 -sentLen 1 -ilabels input_labels.txt -imgsPath ./scanned -predPath ./output/text/
 if __name__ == "__main__":
     main()

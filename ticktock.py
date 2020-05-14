@@ -7,7 +7,7 @@ class PreserverForTime:
 __pt__ = PreserverForTime()
 
 def tick(message = ""):
-    print(message)
+    # print(message)
     start = clock()
     __pt__.ticks.append(start)
     return start
