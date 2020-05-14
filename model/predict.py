@@ -6,29 +6,19 @@ from featureExtraction import imgToFeatureVector, imageToFeatureVector
 from sklearn.metrics import classification_report
 
 
-from scipy.special import softmax
-
-
-def activationFunction(scores):
-    return np.log(softmax(scores))
-
-
 model = None
 
 
 def predictFromFeatureVector(xtest, withAllScores=False):
     global model
     if (model is None):
+        print(modelPath)
         model = joblib.load(modelPath)
 
-    # print(model.score())
     if(not withAllScores):
         return model.predict([xtest])
 
-    #! return list sorted every time
-    # return model.decision_function([xtest])[0]
-    # print(model.classes_[np.argmax(model.decision_function([xtest])[0])])
-    #! return with dictionary for every class
+
     scores = model.predict_log_proba([xtest])[0]
 
     mapping = {label: score for label, score in zip(

@@ -43,18 +43,6 @@ def segmentation(histogram,thresold):
     return sol
 
 
-
-
-
-    
-
-
-
-
-
-
-
-
 def wordSegmentation(binary):
 
 
@@ -62,27 +50,17 @@ def wordSegmentation(binary):
     binary2[binary == 255] = 0
     binary2[binary == 0] = 1
 
-    #print(np.sum(binary2, axis=1))
-
-    # histogrma   axis = 1 for line sementation
     sol = segmentation(np.sum(binary2, axis=1), 1)
     wordList=[]
     for line in sol:
         begin, end = line
 
         
-        #print(begin, end)
-        #binary = cv2.line(binary, (0, begin),
-        #                (binary.shape[1]-1, begin), 0, 1)
-        #binary = cv2.line(binary, (0, end),
-        #                (binary.shape[1]-1, end), 0, 1)
 
         width = int(binary2[begin:end][:].shape[1] * SCALE_PERCENT / 100)
         height = int(binary2[begin:end][:].shape[0] * 100 / 100)
         dim = (width, height)
-        #print((width, height, binary2[begin:end]
-        #    [:].shape[1], binary2[begin:end][:].shape[0]))
-        # resize image
+   
         binary3 = binary2[begin:end][:].copy()
 
         binary3[binary3 == 0] = 255
@@ -90,8 +68,7 @@ def wordSegmentation(binary):
         resized = cv2.resize(binary3, dim, interpolation=cv2.INTER_AREA)
         resizedcopy = resized.copy()
 
-        #cv2.imshow("vertical lines", resized)
-        #cv2.waitKey(0)
+
         resized[resizedcopy > 128] = 0
         resized[resizedcopy < 128] = 1
 
@@ -105,8 +82,6 @@ def wordSegmentation(binary):
             #print(begin2,end2)
             sol3 = segmentation(
                 np.sum(resized[:, begin2:end2], axis=0), 0)
-            #cv2.imshow("word segmented", resizedcopy[:,begin2:end2])
-            #cv2.waitKey(0)
             begin2 = round(begin2*(100.0/SCALE_PERCENT))
             end2 = round(end2*(100.0/SCALE_PERCENT))
             subwords=[]
@@ -116,28 +91,15 @@ def wordSegmentation(binary):
                 begin3,end3=subword
                 begin3 = round(begin3*(100.0/SCALE_PERCENT))
                 end3 = round(end3*(100.0/SCALE_PERCENT))
-                #binary = cv2.line(binary, (begin2+begin3, begin),
-                #                  (begin2+begin3, end), 0, 1)
-                #binary = cv2.line(binary, (begin2+end3, begin),
-                #                  (begin2+end3, end), 0, 1)
+
                 subwords.append((begin3, end3))
                 
             
-            
-            
-            #binary = cv2.line(binary, (begin2, begin),
-            #                      (begin2, end), 180,1)
-            #binary = cv2.line(binary, (end2, begin),
-            #                      (end2, end), 180, 1)
+
             word = {'rows': (begin, end), 'columns': (begin2, end2), 'subwords': subwords,}
             lineList.insert(0, word)
         wordList=wordList+lineList
 
-
-    #imgplot = plt.imshow(binary)
-    #plt.show()
-    #cv2.imshow("word segmented", binary)
-    #cv2.waitKey(0)
 
     return wordList
 
@@ -174,7 +136,6 @@ def main():
                 
                 
 
-main()
 
 
 

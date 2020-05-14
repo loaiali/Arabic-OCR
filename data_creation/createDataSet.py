@@ -1,84 +1,25 @@
+import sys,os
+sys.path.append(os.path.join(os.path.dirname(__file__),"..", "preprocessing")) 
+sys.path.append(os.path.join(os.path.dirname(__file__),"..", "segmentation")) 
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-import os
 import random
 from Preprocessing import textSkewCorrection, binarize
 from scipy import ndimage
-from segmentation4 import wordSegmentation, showScaled, showWordCuts, charSegmentation
+from segmentation import  showScaled, showWordCuts, charSegmentation
+from wordseg import wordSegmentation
 import pyarabic.araby as araby
 import pyarabic.number as number
 import nltk
 from progressbar import *
-import sys
-
 from PIL import ImageFont, ImageDraw, Image
 import textwrap
-
-
-
+import pickle
 
 englishName = {}
-
-englishName["أ"] = "alfHamzaFo2"
-englishName["آ"] = "alfMad"
-englishName["ا"] = "alf"
-englishName["إ"] = "alfHamzaTa7t"
-englishName["ب"] = "ba2"
-englishName["ت"] = "ta2"
-englishName["ث"] = "tha2"
-englishName["ج"] = "geem"
-englishName["ح"] = "7a2"
-englishName["خ"] = "5hi"
-englishName["د"] = "dal"
-englishName["ذ"] = "zal"
-englishName["ر"] = "ra2"
-englishName["ز"] = "zeen"
-englishName["س"] = "seen"
-englishName["ش"] = "sheen"
-englishName["ص"] = "sad"
-englishName["ض"] = "dad"
-englishName["ط"] = "ta2"
-englishName["ظ"] = "za2"
-englishName["ع"] = "3een"
-englishName["غ"] = "5een"
-englishName["ق"] = "2af"
-englishName["ف"] = "fa2"
-englishName["ك"] = "kaf"
-englishName["ل"] = "lam"
-englishName["م"] = "meem"
-englishName["ن"] = "noon"
-englishName["ه"] = "ha2"
-englishName["و"] = "wow"
-englishName["ي"] = "ya2"
-englishName["ة"] = "ta2Marbota"
-englishName["ئ"] = "ya2Hamza"
-englishName["ؤ"] = "wowHamze"
-englishName["ى"] = "alfLayna"
-englishName["ء"] = "hamza"
-englishName["لا"] = "lam2lf"
-englishName["لأ"] = "lam2lfHamzafo2"
-englishName["لإ"] = "lam2lfHamzaTa7t"
-englishName["لآ"] = "lam2lfHamzaMada"
-
-englishName["؟"] = "questionMark"
-englishName["."] = 'dot'
-englishName[","] = 'fasla1'
-englishName['،'] = "fasla2"
-
-englishName['1'] = 'one'
-englishName['2'] = 'two'
-englishName['3'] = 'three'
-englishName['4'] = 'four'
-englishName['5'] = 'five'
-englishName['6'] = 'six'
-englishName['7'] = 'seven'
-englishName['8'] = 'eight'
-englishName['9'] = 'nine'
-englishName['0'] = 'zero'
-englishName['('] = '('
-englishName[')'] = ')'
-
+with open('char_names.pickle', 'rb') as handle:
+    englishName = pickle.load(handle)
 
 
 nonConnChOneSide = ["و", "ر", "ز", "ذ", "د",
@@ -142,16 +83,12 @@ def check_on_length(wrong_file,right_file,ending=2000):
         text = ftext.read()
         wordsArray = nltk.word_tokenize(text)
 
-        #print("text word List ", wordsArray)
 
         thre = binarize(img)
         rotated = textSkewCorrection(thre)
         wordList = wordSegmentation(rotated)
 
-        ## text preprocessing
 
-        ## tokenizations
-        #wordsArray = nltk.word_tokenize(text)
         print(file,len (wordsArray), len(wordList))
 
 
@@ -165,7 +102,7 @@ def check_on_length(wrong_file,right_file,ending=2000):
             fWrong.write(stt+"\n")
             print("************wrong Image************")
             write_tokenz(wordsArray)
-            showWordCuts(img,wordList)
+            #showWordCuts(img,wordList)
             break
         else:
             fRight.write(file+".txt"+"\n")
@@ -243,22 +180,17 @@ def createDataSet(img,wordList,wordsArray,nonConnChOneSide,nonConnChTwoSide,engl
                 elif indx <len(characters)-1:
                     charImage = image[:, srl[indx]["mid"]:srl[indx-1]["mid"]]
                 else:
-                    charImage = image[:, 0:srl[indx-1]["mid"]]
-                
-                #showScaled(charImage,"ch",400)
-      
+                    charImage = image[:, 0:srl[indx-1]["mid"]]      
                         
                 print('dataset\\'+ englishName[char]+"\\"+file)
                 if not os.path.exists('dataset\\'+englishName[char]+"\\"+file):
                     os.makedirs('dataset\\'+englishName[char]+"\\"+file)
 
                 fileName = 'dataset\\' +englishName[char]+"\\"+file+"\\" + str(c)+".png"
-                #print(fileName)
                 cv2.imwrite(fileName, charImage)
                 c+=1
 
 
-#searchTextOnly()
 check_on_length("wrong.txt","right.txt",ending=5000)
 f = open("right.txt", "r")
 fw = open("output.txt", "w", encoding="utf-8")
@@ -281,7 +213,6 @@ for file in files:
        thre = binarize(img)
        rotated = textSkewCorrection(thre)
 
-       #cv2.imwrite("corr_capr1003.png", rotated)
        wordList = charSegmentation(rotated)
 
        createDataSet(rotated,wordList, wordsArray,

@@ -19,12 +19,7 @@ def readData(dataDir):
     labels = []
     folders = glob(f'{dataDir}\\*')
     i = 0
-    # for folder in folders:
-    #     print(f"currently in folder: {folder}")
-    #     for subDir in glob(folder+'\*'):
-    #         for f in glob(subDir+'\*.txt'):
-    #             i += 1
-    # print ("you have total files =", i)
+
     for folder in folders:
         label = path_leaf(folder)
         print(f"currently in label: {label}")

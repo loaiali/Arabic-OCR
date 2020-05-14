@@ -4,9 +4,9 @@ import argparse
 import os
 from sklearn.externals import joblib
 from config import modelToPredict
-from segmentation4 import segmentationFromPath, showScaled
-from predict import predictFromFeatureVector, activationFunction
-from postprocessing.Decoding.fst import FST
+from segmentation import segmentationFromPath, showScaled
+from predict import predictFromFeatureVector
+from postprocessing.Decodsing.fst import FST
 from postprocessing.Decoding.beam_search import BeamSearch
 from config import englishName, arabicNames
 from time import time
@@ -49,11 +49,7 @@ class OCR:
         '''
         allImageWords = []
         wordsSegmented, img = segmentationFromPath(imagePath)
-        # joblib.dump(wordsSegmented, "wordsSegmented.test")
-        # joblib.dump(img, "img.test")
-        # wordsSegmented, img = joblib.load("wordsSegmented.test"), joblib.load("img.test")
 
-        # [      {'rows': (), 'columns': (), 'srl': [{mid: int}]}  ,       {}, {}]
         wordsCount = 0
         words = []
         letters = []

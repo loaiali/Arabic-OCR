@@ -12,7 +12,6 @@ def writeToFile(i, config, mat, rep, score, clf):
     f = open(f'reports/{fid}.txt', 'w')
     f.write(f"config:\n{config}\n\nscore = {score}\n\nconfusion matrix:\n{mat}\n\nreport:\n{rep}\n\n")
     f.close()
-    # joblib.dump(clf, f"clfs/{fid}.sav")
 
 def main():
     tick("loading features data from files")
@@ -45,9 +44,7 @@ def main():
         tock("metrices calculated successfully")
 
         writeToFile(i, config, mat, rep, score, currentClassifier)
-        # del y_pred
-        # del currentClassifier
-        # del mat
+
     tock("the whole test cases has ended")
 
 
