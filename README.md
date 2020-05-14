@@ -1,2 +1,2 @@
 # Arabic-OCR
-a typed Arabic characters OCR for course pattern recognition in computer cngineering depeartment in cairo university 
+a typed Arabic characters OCR for  pattern recognition course, computer cngineering depeartment, cairo university 
